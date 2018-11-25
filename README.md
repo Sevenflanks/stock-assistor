@@ -22,6 +22,14 @@
 
 ## QuickStart
 ```
+# 環境
+# 必須: JDK8+, 建議: JDK11
+$ https://adoptopenjdk.net/
+# 必須: 環境變數: JAVA_HOME & Java runtime
+# 必須: Maven3+, 建議: Maven3.6.0
+$ https://maven.apache.org/download.cgi
+# 必須: 環境變數: MAVEN_HOME & Maven runtime
+
 # 啟動
 $ mvn spring-boot:run
 
