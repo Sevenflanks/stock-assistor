@@ -26,9 +26,11 @@
 $ mvn spring-boot:run
 
 # 爬取資料(你可以更改日期參數來改變要爬取的資料日期)
+# 若是同一個日期多次爬取，則會優先使用本地端的檔案(詳見data/{date})
 $ http://localhost:8080/api/stock/init/2018-11-21
 
 # 觀看資料(目前尚未有UI，因此請直接利用H2的WebUI訪問DB)
+# 請注意必須要先爬取資料，資料才會進到DB
 $ http://localhost:8080/h2/
     JDBC URL: jdbc:h2:mem:test
     User Name: sa
