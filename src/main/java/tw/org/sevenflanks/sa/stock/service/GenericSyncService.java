@@ -8,8 +8,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
 import tw.org.sevenflanks.sa.config.GlobalConstants;
 import tw.org.sevenflanks.sa.stock.dao.SyncDateDao;
 import tw.org.sevenflanks.sa.stock.entity.SyncDateEntity;
@@ -17,6 +15,8 @@ import tw.org.sevenflanks.sa.stock.entity.SyncDateEntity;
 public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDateDao<T>> {
 
 	DAO dao();
+
+	Class<T> entityClass();
 
 	/** 從遠端抓資料 */
 	List<T> fetch(LocalDate date);
@@ -50,7 +50,8 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 		final Path path = Paths.get("data").resolve(date.toString());
 		final Path loadFrom = path.resolve(fileName());
 		if (Files.exists(loadFrom)) {
-			return GlobalConstants.WEB_OBJECT_MAPPER.readValue(loadFrom.toFile(), new TypeReference<List<T>>(){});
+			return Optional.of(GlobalConstants.WEB_OBJECT_MAPPER.readValue(loadFrom.toFile(),
+					GlobalConstants.WEB_OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, entityClass())));
 		} else {
 			return Optional.empty();
 		}

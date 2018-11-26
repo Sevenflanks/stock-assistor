@@ -28,6 +28,11 @@ public class TwseCompanySyncService implements GenericSyncService<TwseCompany, T
 	}
 
 	@Override
+	public Class<TwseCompany> entityClass() {
+		return TwseCompany.class;
+	}
+
+	@Override
 	public List<TwseCompany> fetch(LocalDate date) {
 		// 公司別的API沒有日期輸入參數
 		return twseCompanyPicker.getAll().stream()
