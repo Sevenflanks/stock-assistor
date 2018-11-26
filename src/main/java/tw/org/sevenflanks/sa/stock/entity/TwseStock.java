@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tw.org.sevenflanks.sa.stock.model.TwseDailyDetailModel;
 
+/** 上市股票行情 */
 @Getter
 @Setter
 @NoArgsConstructor

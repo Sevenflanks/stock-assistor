@@ -24,6 +24,13 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 	/** 檔案名稱 */
 	String fileName();
 
+	default void syncToFileAndDb(LocalDate date) throws IOException {
+		// 先從檔案資料讀取，沒有的話再從Api撈
+		final List<T> twseCompanies = this.loadFromFile(date).orElseGet(() -> this.fetch(date));
+		this.saveToFile(date, twseCompanies);
+		this.saveToDb(date, twseCompanies);
+	}
+
 	/** 儲存到檔案 */
 	default void saveToFile(LocalDate date, List<T> datas) throws IOException {
 		final Path path = Paths.get("data").resolve(date.toString());

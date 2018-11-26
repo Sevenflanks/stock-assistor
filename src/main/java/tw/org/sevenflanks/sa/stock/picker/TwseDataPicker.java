@@ -18,7 +18,7 @@ import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 import tw.org.sevenflanks.sa.base.msg.enums.MsgTemplate;
-import tw.org.sevenflanks.sa.stock.model.ExchangeModel;
+import tw.org.sevenflanks.sa.stock.model.TwseExchangeModel;
 import tw.org.sevenflanks.sa.stock.model.TwseDailyModel;
 
 @Slf4j
@@ -48,8 +48,8 @@ public class TwseDataPicker {
 		return MsgTemplate.requireBody("證交所API", url, response);
 	}
 
-	/** 上市融券資訊(證交所) */
-	public ExchangeModel getTwt93u(LocalDate date) {
+	/** 上市融券餘額資訊(證交所) */
+	public TwseExchangeModel getRgremain(LocalDate date) {
 		final long milli = Instant.now().toEpochMilli();
 		final String paramResponse = "json";
 		final String paramDate = date.format(API_DATE);
@@ -62,7 +62,7 @@ public class TwseDataPicker {
 		return httpGetBody(builder);
 	}
 
-	private ExchangeModel httpGetBody(UriComponentsBuilder builder) {
+	private TwseExchangeModel httpGetBody(UriComponentsBuilder builder) {
 		final RestTemplate restTemplate = new RestTemplate();
 		final HttpHeaders headers = new HttpHeaders();
 		final HttpEntity<?> request = new HttpEntity<>(headers);
@@ -70,11 +70,11 @@ public class TwseDataPicker {
 		headers.setHost(InetSocketAddress.createUnresolved("www.twse.com.tw", 80)); // 測試結果這是非必要
 
 		final String url = builder.toUriString();
-		final ResponseEntity<ExchangeModel> response = restTemplate.exchange(
+		final ResponseEntity<TwseExchangeModel> response = restTemplate.exchange(
 				url,
 				HttpMethod.GET,
 				request,
-				ExchangeModel.class);
+				TwseExchangeModel.class);
 
 		return MsgTemplate.requireBody("證交所API", url, response);
 	}

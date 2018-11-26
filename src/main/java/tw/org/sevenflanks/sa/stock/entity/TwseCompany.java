@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tw.org.sevenflanks.sa.stock.model.TwseCompanyModel;
 
+/** 上市公司資料 */
 @Getter
 @Setter
 @NoArgsConstructor

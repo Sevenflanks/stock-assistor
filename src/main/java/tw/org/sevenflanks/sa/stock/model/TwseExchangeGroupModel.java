@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ExchangeGroupModel {
+public class TwseExchangeGroupModel {
 
 	private int start;
 	private int span;

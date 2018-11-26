@@ -18,7 +18,7 @@ public class StockServiceTest {
 
 	@Test
 	public void test() throws IOException {
-		stockService.syncToFileAndDb(LocalDate.of(2018, 11, 23));
+		stockService.syncAllToFileAndDb(LocalDate.of(2018, 11, 23));
 	}
 
 }

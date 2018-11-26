@@ -23,7 +23,7 @@ public class StockApi {
 
 	@GetMapping("/init/{date}")
 	public ResponseEntity<MsgBody<String>> init(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) throws IOException {
-		stockService.syncToFileAndDb(date);
+		stockService.syncAllToFileAndDb(date);
 		return MsgBody.ok("操作成功");
 	}
 
