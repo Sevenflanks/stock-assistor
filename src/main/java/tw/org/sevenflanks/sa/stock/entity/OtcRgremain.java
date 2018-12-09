@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tw.org.sevenflanks.sa.stock.model.OtcExchangeDetailModel;
 
-/** 上市融券餘額 */
+/** 上櫃融券餘額 */
 @Getter
 @Setter
 @NoArgsConstructor

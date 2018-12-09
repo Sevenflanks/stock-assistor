@@ -13,6 +13,8 @@ public interface SyncDateDao<ENTITY extends SyncDateEntity> extends GenericDao<E
 
 	List<ENTITY> findBySyncDate(LocalDate syncDate);
 
+	long countBySyncDate(LocalDate syncDate);
+
 	int deleteBySyncDate(LocalDate syncDate);
 
 }

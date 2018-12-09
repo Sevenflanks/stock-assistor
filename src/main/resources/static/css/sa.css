@@ -1,0 +1,34 @@
+.sa-date {
+    cursor: pointer;
+
+    /*margin: 2px 2px;*/
+    /*padding: 2px 5px;*/
+    /*background-color: #ffffff;*/
+    /*border-radius: 5px;*/
+
+    /*text-align: center;*/
+    /*vertical-align: middle;*/
+
+    transition-duration: 0.2s;
+}
+
+.ui.label.sa-date {
+    margin: 2px 2px;
+}
+
+.sa-date:hover {
+    color: #ffffff;
+    background-color: #cccccc;
+}
+
+.sa-month {
+    /*margin: 5px 0px;*/
+    /*padding: 6px 3px;*/
+    /*background-color: #fff5f1;*/
+    /*border: 1px #ebe2de solid;*/
+    /*border-radius: 5px;*/
+}
+
+.sa-month > :first-child {
+    /*background-color: #dcd3d0;*/
+}

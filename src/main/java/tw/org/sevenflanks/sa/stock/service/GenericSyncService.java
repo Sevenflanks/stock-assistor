@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import tw.org.sevenflanks.sa.config.GlobalConstants;
 import tw.org.sevenflanks.sa.stock.dao.SyncDateDao;
 import tw.org.sevenflanks.sa.stock.entity.SyncDateEntity;
+import tw.org.sevenflanks.sa.stock.enums.DataStoreType;
 
 public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDateDao<T>> {
 	final Logger log = LoggerFactory.getLogger(GenericSyncService.class);
@@ -27,6 +29,26 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 
 	/** 檔案名稱 */
 	String fileName();
+
+	default DataStoreType checkDataStoreType(LocalDate date) {
+		try {
+			final long dbCount = dao().countBySyncDate(date);
+			if (dbCount > 0) {
+				return DataStoreType.DB;
+			}
+
+			final Path path = Paths.get("data").resolve(YearMonth.from(date).toString()).resolve(date.toString());
+			final Path loadFrom = path.resolve(fileName());
+			if (Files.exists(loadFrom)) {
+				return DataStoreType.FILE;
+			}
+		} catch (Exception e) {
+			log.error("[{}@{}] checking DataStoreType failed", this.getClass().getSimpleName(), date, e);
+			return DataStoreType.FAILED;
+		}
+
+		return DataStoreType.NONE;
+	}
 
 	default void syncToFileAndDb(LocalDate date) throws IOException {
 		// 先從檔案資料讀取，沒有的話再從Api撈
@@ -44,7 +66,7 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 
 	/** 儲存到檔案 */
 	default void saveToFile(LocalDate date, List<T> datas) throws IOException {
-		final Path path = Paths.get("data").resolve(date.toString());
+		final Path path = Paths.get("data").resolve(YearMonth.from(date).toString()).resolve(date.toString());
 		log.debug("[{}@{}] saving to file, {}", this.getClass().getSimpleName(), date, path);
 
 		// 沒有資料夾的話先建立
@@ -69,7 +91,7 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 	 * @return 若檔案不存在，則回傳為Empty
 	 */
 	default Optional<List<T>> loadFromFile(LocalDate date) throws IOException {
-		final Path path = Paths.get("data").resolve(date.toString());
+		final Path path = Paths.get("data").resolve(YearMonth.from(date).toString()).resolve(date.toString());
 		final Path loadFrom = path.resolve(fileName());
 		log.debug("[{}@{}] loaded from file, {}", this.getClass().getSimpleName(), date, loadFrom);
 

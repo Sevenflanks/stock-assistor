@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>股助</title>
+
+    <link rel="stylesheet" href="css/semantic.min.css">
+    <link rel="stylesheet" href="css/sa.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://momentjs.com/downloads/moment.min.js"></script>
+    <script src="js/semantic.min.js"></script>
+    <script src="js/sseUtils.js"></script>
+</head>
+<body>
+<div class="ui container">
+    <div class="ui cards" id="dateGrid">
+    </div>
+</div>
+</body>
+<script>
+$(function() {
+  render('2018');
+  check('2018');
+
+  function renderDateColor(date, totleType) {
+    let $saDate = $(`.sa-date[data-date="${date}"]`);
+    $saDate.removeClass('orange');
+    $saDate.removeClass('yellow');
+    $saDate.removeClass('green');
+    $saDate.removeClass('brown');
+    switch (totleType) {
+      case 'FAILED':
+        $saDate.addClass('orange');
+        break;
+      case 'FILE':
+        $saDate.addClass('yellow');
+        break;
+      case 'DB':
+        $saDate.addClass('green');
+        break;
+      case 'NONE':
+        $saDate.addClass('brown');
+        break;
+    }
+  }
+
+  /** 檢查一年內的每天資料狀態 */
+  function check(year) {
+    let eventSource = new EventSource(`/api/stock/check/year/${year}`);
+    eventSource.onmessage = evt => {
+      // 抓出每一天的格子，並根據結果上色
+      let data = JSON.parse(evt.data);
+      let date = data.dataDate.substr(0, 10);
+      renderDateColor(date, data.totalType);
+    };
+    eventSource.onerror = evt => eventSource.close();
+  }
+
+  /** 載入資料(by月份) */
+  function fetchMonth(yearMonth) {
+    let $saMonthBtn = $(`.ui.bottom[data-date="${yearMonth}"]`);
+    $saMonthBtn.dimmer('show');
+    let eventSource = new EventSource(`/api/stock/init/month/${yearMonth}`);
+    eventSource.onmessage = evt => {
+      // 抓出每一天的格子，並根據結果上色
+      let data = JSON.parse(evt.data);
+      let date = data.dataDate.substr(0, 10);
+      renderDateColor(date, data.totalType);
+    };
+    eventSource.onerror = evt => {
+      eventSource.close();
+      $saMonthBtn.dimmer('hide');
+    };
+  }
+
+  /** 繪製整年資訊 */
+  function render(year) {
+    let firstDay = moment(year, 'YYYY').startOf('year');
+    let lastDay = moment(year, 'YYYY').endOf('year');
+
+    $('#dateGrid').empty();
+
+    // 把每一月畫出來
+    for(let currDate = firstDay; currDate.isBefore(lastDay); currDate.add(1, 'M')) {
+      prepareMonth(currDate.format('YYYY-MM'))
+        .appendTo('#dateGrid');
+    }
+
+  }
+
+  function prepareMonth(yearMonth) {
+    let firstDay = moment(yearMonth, 'YYYY-MM').startOf('month');
+    let lastDay = moment(yearMonth, 'YYYY-MM').endOf('month');
+
+    let dateTmp = '<span class="ui label sa-date"></span>';
+
+    let $month = $(`
+        <div class="ui card sa-month" data-date="${yearMonth}">
+            <div class="content">
+                <div class="header">${yearMonth}</div>
+                <div class="description"></div>
+            </div>
+        </div>
+    `);
+    let $syncBtn = $(`
+        <div class="ui bottom attached button" data-date="${yearMonth}">
+            <i class="sync alternate icon"></i>Sync data
+            <div class="ui inverted dimmer">
+                <div class="ui small loader">Loading</div>
+            </div>
+        </div>
+    `).on('click', e => {
+      fetchMonth($(e.target).attr("data-date"));
+    });
+    $month.append($syncBtn);
+
+    let $monthDesc = $month.find('div.description');
+
+    // 把每一天畫出來
+    for(let currDate = firstDay; !currDate.isAfter(lastDay); currDate.add(1, 'd')) {
+      $(dateTmp)
+        .attr("data-date", currDate.format('YYYY-MM-DD'))
+        .text(currDate.format('DD'))
+        .appendTo($monthDesc);
+    }
+
+
+    return $month;
+  }
+});
+</script>
+</html>

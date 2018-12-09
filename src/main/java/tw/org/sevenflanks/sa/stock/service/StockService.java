@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import tw.org.sevenflanks.sa.stock.model.DataStoringModel;
+
 @Service
 @Transactional
 public class StockService {
@@ -29,13 +31,31 @@ public class StockService {
 	@Autowired
 	private OtcRgremainSyncService otcRgremainSyncService;
 
-	public void syncAllToFileAndDb(LocalDate date) throws IOException {
+	public DataStoringModel checkDataStoreType(LocalDate date) {
+		try {
+			return DataStoringModel.builder()
+					.dataDate(date)
+					.otcCompany(otcCompanySyncService.checkDataStoreType(date))
+					.otcRgremain(otcRgremainSyncService.checkDataStoreType(date))
+					.otcStock(otcStockSyncService.checkDataStoreType(date))
+					.twseCompany(twseCompanySyncService.checkDataStoreType(date))
+					.twseRgremain(twseRgremainSyncService.checkDataStoreType(date))
+					.twseStock(twseStockSyncService.checkDataStoreType(date))
+					.build();
+		} catch (Exception e) {
+			return DataStoringModel.error(date);
+		}
+	}
+
+	public DataStoringModel syncAllToFileAndDb(LocalDate date) throws IOException {
 		twseCompanySyncService.syncToFileAndDb(date);
 		twseStockSyncService.syncToFileAndDb(date);
 		twseRgremainSyncService.syncToFileAndDb(date);
 		otcCompanySyncService.syncToFileAndDb(date);
 		otcStockSyncService.syncToFileAndDb(date);
 		otcRgremainSyncService.syncToFileAndDb(date);
+
+		return checkDataStoreType(date);
 	}
 
 }

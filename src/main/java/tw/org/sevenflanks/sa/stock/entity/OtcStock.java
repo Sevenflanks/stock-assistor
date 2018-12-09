@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tw.org.sevenflanks.sa.stock.model.OtcStockDetailModel;
 
-/** 上市股票行情 */
+/** 上櫃股票行情 */
 @Getter
 @Setter
 @NoArgsConstructor

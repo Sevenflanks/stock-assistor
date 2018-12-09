@@ -8,7 +8,7 @@
     4. <s>爬取上櫃公司資訊</s>`(done)`
     5. <s>爬取上櫃股票行情</s>`(done)`
     6. <s>爬取上櫃股票融資餘額</s>`(done)`
-    7. WebUI-資料爬取控制
+    7. <s>WebUI-資料爬取控制</s>`(early release)`
     8. WebUI-資料視覺化
     9. WebUI-資料分析
 
@@ -33,13 +33,8 @@ $ https://maven.apache.org/download.cgi
 # 啟動
 $ mvn spring-boot:run
 
-# 爬取資料(你可以更改日期參數來改變要爬取的資料日期)
+# 爬取資料WebUI
 # 若是同一個日期多次爬取，則會優先使用本地端的檔案(詳見data/{date})
-$ http://localhost:8080/api/stock/init/2018-11-21
+$ http://localhost:8080/static/data_init.html
 
-# 觀看資料(目前尚未有UI，因此請直接利用H2的WebUI訪問DB)
-# 請注意必須要先爬取資料，資料才會進到DB
-$ http://localhost:8080/h2/
-    JDBC URL: jdbc:h2:mem:test
-    User Name: sa
 ```
