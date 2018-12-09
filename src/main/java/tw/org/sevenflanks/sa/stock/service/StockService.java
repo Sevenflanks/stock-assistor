@@ -23,11 +23,15 @@ public class StockService {
 	@Autowired
 	private OtcCompanySyncService otcCompanySyncService;
 
+	@Autowired
+	private OtcStockSyncService otcStockSyncService;
+
 	public void syncAllToFileAndDb(LocalDate date) throws IOException {
 		twseCompanySyncService.syncToFileAndDb(date);
 		twseStockSyncService.syncToFileAndDb(date);
 		twseRgremainSyncService.syncToFileAndDb(date);
 		otcCompanySyncService.syncToFileAndDb(date);
+		otcStockSyncService.syncToFileAndDb(date);
 	}
 
 }

@@ -34,7 +34,6 @@ public class TwseStockSyncService implements GenericSyncService<TwseStock, TwseS
 
 	@Override
 	public List<TwseStock> fetch(LocalDate date) {
-		// 公司別的API沒有日期輸入參數
 		return twseDataPicker.getStockDay(date).getData5().stream()
 				.map(TwseStock::new)
 				.collect(Collectors.toList());

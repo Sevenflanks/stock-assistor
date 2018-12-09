@@ -12,7 +12,7 @@ import tw.org.sevenflanks.sa.base.msg.exception.MsgException;
 import tw.org.sevenflanks.sa.base.msg.model.Msg;
 
 public enum MsgTemplate {
-	MSG0000(INFO, "無訊息"),
+	MSG0000(INFO, "正常"),
 
 	API0001(DANGER, "參數有誤"),
 	API9999(DANGER, "發生預期外的錯誤"),

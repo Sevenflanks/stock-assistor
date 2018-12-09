@@ -34,7 +34,6 @@ public class TwseRgremainSyncService implements GenericSyncService<TwseRgremain,
 
 	@Override
 	public List<TwseRgremain> fetch(LocalDate date) {
-		// 公司別的API沒有日期輸入參數
 		return twseDataPicker.getRgremain(date).getData().stream()
 				.map(TwseRgremain::new)
 				.collect(Collectors.toList());
