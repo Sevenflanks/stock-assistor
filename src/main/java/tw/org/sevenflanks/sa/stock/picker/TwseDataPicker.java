@@ -10,6 +10,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -18,8 +20,8 @@ import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 import tw.org.sevenflanks.sa.base.msg.enums.MsgTemplate;
-import tw.org.sevenflanks.sa.stock.model.TwseExchangeModel;
 import tw.org.sevenflanks.sa.stock.model.TwseDailyModel;
+import tw.org.sevenflanks.sa.stock.model.TwseExchangeModel;
 
 @Slf4j
 @Component
@@ -28,6 +30,7 @@ public class TwseDataPicker {
 	private static final DateTimeFormatter API_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
 
 	/** 個股成交資訊(證交所) */
+	@Retryable(maxAttempts = 3, backoff = @Backoff(value = 5000))
 	public TwseDailyModel getStockDay(LocalDate date) {
 
 		// 建立request
@@ -49,6 +52,7 @@ public class TwseDataPicker {
 	}
 
 	/** 上市融券餘額資訊(證交所) */
+	@Retryable(maxAttempts = 3, backoff = @Backoff(value = 5000))
 	public TwseExchangeModel getRgremain(LocalDate date) {
 		final long milli = Instant.now().toEpochMilli();
 		final String paramResponse = "json";

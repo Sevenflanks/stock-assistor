@@ -20,10 +20,14 @@ public class StockService {
 	@Autowired
 	private TwseRgremainSyncService twseRgremainSyncService;
 
+	@Autowired
+	private OtcCompanySyncService otcCompanySyncService;
+
 	public void syncAllToFileAndDb(LocalDate date) throws IOException {
 		twseCompanySyncService.syncToFileAndDb(date);
 		twseStockSyncService.syncToFileAndDb(date);
 		twseRgremainSyncService.syncToFileAndDb(date);
+		otcCompanySyncService.syncToFileAndDb(date);
 	}
 
 }
