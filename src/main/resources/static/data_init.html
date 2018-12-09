@@ -22,15 +22,20 @@ $(function() {
   render('2018');
   check('2018');
 
-  function renderDateColor(date, totleType) {
+  function renderDateColor(date, totleType, msg) {
     let $saDate = $(`.sa-date[data-date="${date}"]`);
     $saDate.removeClass('orange');
     $saDate.removeClass('yellow');
     $saDate.removeClass('green');
     $saDate.removeClass('brown');
+    $saDate.removeAttr('data-tooltip');
+    $saDate.prop('data-inverted', false);
+
     switch (totleType) {
       case 'FAILED':
         $saDate.addClass('orange');
+        $saDate.attr('data-tooltip', msg);
+        $saDate.prop('data-inverted', true);
         break;
       case 'FILE':
         $saDate.addClass('yellow');
@@ -51,7 +56,7 @@ $(function() {
       // 抓出每一天的格子，並根據結果上色
       let data = JSON.parse(evt.data);
       let date = data.dataDate.substr(0, 10);
-      renderDateColor(date, data.totalType);
+      renderDateColor(date, data.totalType, data.msg);
     };
     eventSource.onerror = evt => eventSource.close();
   }
@@ -65,7 +70,7 @@ $(function() {
       // 抓出每一天的格子，並根據結果上色
       let data = JSON.parse(evt.data);
       let date = data.dataDate.substr(0, 10);
-      renderDateColor(date, data.totalType);
+      renderDateColor(date, data.totalType, data.msg);
     };
     eventSource.onerror = evt => {
       eventSource.close();
@@ -106,7 +111,7 @@ $(function() {
         <div class="ui bottom attached button" data-date="${yearMonth}">
             <i class="sync alternate icon"></i>Sync data
             <div class="ui inverted dimmer">
-                <div class="ui small loader">Loading</div>
+                <div class="ui small loader"></div>
             </div>
         </div>
     `).on('click', e => {

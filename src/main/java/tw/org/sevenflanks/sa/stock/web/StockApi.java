@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import tw.org.sevenflanks.sa.base.msg.model.MsgBody;
 import tw.org.sevenflanks.sa.base.utils.WebFluxUtils;
 import tw.org.sevenflanks.sa.stock.model.DataStoringModel;
 import tw.org.sevenflanks.sa.stock.service.StockService;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/stock")
 public class StockApi {
@@ -44,7 +46,8 @@ public class StockApi {
 					try {
 						return stockService.syncAllToFileAndDb(date);
 					} catch (Exception e) {
-						return DataStoringModel.error(date);
+						log.info("[{}] syncAllToFileAndDb failed" , date, e);
+						return DataStoringModel.error(date, e);
 					}
 				}));
 	}
@@ -60,7 +63,7 @@ public class StockApi {
 
 			@Override
 			public boolean hasNext() {
-				return currDate == null || !currDate.isAfter(lastDate);
+				return currDate == null || currDate.isBefore(lastDate);
 			}
 
 			@Override

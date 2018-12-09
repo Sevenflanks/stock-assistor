@@ -1,7 +1,9 @@
 package tw.org.sevenflanks.sa.stock.service;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,8 +40,8 @@ public class OtcStockSyncService implements GenericSyncService<OtcStock, OtcStoc
 	public List<OtcStock> fetch(LocalDate date) {
 		final OtcStockModel stockDay = otcStockPicker.getStockDay(date);
 		return Stream.concat(
-				stockDay.getMmData().stream(),
-				stockDay.getAaData().stream())
+				Optional.ofNullable(stockDay).map(OtcStockModel::getMmData).map(Collection::stream).orElseGet(Stream::empty),
+				Optional.ofNullable(stockDay).map(OtcStockModel::getAaData).map(Collection::stream).orElseGet(Stream::empty))
 				.map(OtcStock::new)
 				.collect(Collectors.toList());
 	}
@@ -47,5 +49,10 @@ public class OtcStockSyncService implements GenericSyncService<OtcStock, OtcStoc
 	@Override
 	public String fileName() {
 		return "otc_stock";
+	}
+
+	@Override
+	public String zhName() {
+		return "上櫃股票行情";
 	}
 }

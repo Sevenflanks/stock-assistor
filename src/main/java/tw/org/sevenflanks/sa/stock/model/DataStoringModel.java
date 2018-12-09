@@ -23,11 +23,13 @@ public class DataStoringModel {
 	private DataStoreType twseRgremain;
 	private DataStoreType twseStock;
 	private DataStoreType totalType;
+	private String msg;
 
-	public static DataStoringModel error(LocalDate date) {
+	public static DataStoringModel error(LocalDate date, Throwable t) {
 		return DataStoringModel.builder()
 				.dataDate(date)
 				.totalType(DataStoreType.FAILED)
+				.msg(t.getMessage())
 				.build();
 	}
 

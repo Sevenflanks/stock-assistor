@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.extern.slf4j.Slf4j;
 import tw.org.sevenflanks.sa.stock.model.DataStoringModel;
 
+@Slf4j
 @Service
 @Transactional
 public class StockService {
@@ -32,19 +34,15 @@ public class StockService {
 	private OtcRgremainSyncService otcRgremainSyncService;
 
 	public DataStoringModel checkDataStoreType(LocalDate date) {
-		try {
-			return DataStoringModel.builder()
-					.dataDate(date)
-					.otcCompany(otcCompanySyncService.checkDataStoreType(date))
-					.otcRgremain(otcRgremainSyncService.checkDataStoreType(date))
-					.otcStock(otcStockSyncService.checkDataStoreType(date))
-					.twseCompany(twseCompanySyncService.checkDataStoreType(date))
-					.twseRgremain(twseRgremainSyncService.checkDataStoreType(date))
-					.twseStock(twseStockSyncService.checkDataStoreType(date))
-					.build();
-		} catch (Exception e) {
-			return DataStoringModel.error(date);
-		}
+		return DataStoringModel.builder()
+				.dataDate(date)
+				.otcCompany(otcCompanySyncService.checkDataStoreType(date))
+				.otcRgremain(otcRgremainSyncService.checkDataStoreType(date))
+				.otcStock(otcStockSyncService.checkDataStoreType(date))
+				.twseCompany(twseCompanySyncService.checkDataStoreType(date))
+				.twseRgremain(twseRgremainSyncService.checkDataStoreType(date))
+				.twseStock(twseStockSyncService.checkDataStoreType(date))
+				.build();
 	}
 
 	public DataStoringModel syncAllToFileAndDb(LocalDate date) throws IOException {

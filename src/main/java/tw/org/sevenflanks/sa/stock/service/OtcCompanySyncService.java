@@ -1,8 +1,11 @@
 package tw.org.sevenflanks.sa.stock.service;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +38,9 @@ public class OtcCompanySyncService implements GenericSyncService<OtcCompany, Otc
 	@Override
 	public List<OtcCompany> fetch(LocalDate date) {
 		// 公司別的API沒有日期輸入參數
-		return otcCompanyPicker.getAll().stream()
+		return Optional.ofNullable(otcCompanyPicker.getAll())
+				.map(Collection::stream)
+				.orElseGet(Stream::empty)
 				.map(OtcCompany::new)
 				.collect(Collectors.toList());
 	}
@@ -43,5 +48,10 @@ public class OtcCompanySyncService implements GenericSyncService<OtcCompany, Otc
 	@Override
 	public String fileName() {
 		return "otc_company";
+	}
+
+	@Override
+	public String zhName() {
+		return "上櫃公司資訊";
 	}
 }
