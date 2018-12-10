@@ -12,6 +12,10 @@
     transition-duration: 0.2s;
 }
 
+.sa-empty.sa-date {
+    visibility: hidden;
+}
+
 .ui.label.sa-date {
     margin: 2px 2px;
 }
@@ -21,14 +25,19 @@
     background-color: #cccccc;
 }
 
-.sa-month {
+.ui.card.sa-month {
     /*margin: 5px 0px;*/
     /*padding: 6px 3px;*/
     /*background-color: #fff5f1;*/
     /*border: 1px #ebe2de solid;*/
     /*border-radius: 5px;*/
+    width: 300px;
 }
 
 .sa-month > :first-child {
     /*background-color: #dcd3d0;*/
+}
+
+.ui.large.container {
+    width: 90%;
 }

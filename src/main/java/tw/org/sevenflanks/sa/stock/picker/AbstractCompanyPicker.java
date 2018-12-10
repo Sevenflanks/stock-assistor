@@ -1,6 +1,5 @@
 package tw.org.sevenflanks.sa.stock.picker;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
@@ -59,7 +58,7 @@ public interface AbstractCompanyPicker<T> {
 					.build();
 
 			return csvToBean.parse();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new MsgException(MsgTemplate.SYS9999.build("取得公司資訊失敗"), e);
 		}
 	}
