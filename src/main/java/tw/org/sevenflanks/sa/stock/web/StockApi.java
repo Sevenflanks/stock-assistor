@@ -33,14 +33,14 @@ public class StockApi {
 
 	@GetMapping("/check/year/{year}")
 	public Flux<ServerSentEvent<DataStoringModel>> check(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Year year) {
-		final Iterator<LocalDate> dates = toDateIterator(year.atDay(1), year.plusYears(1).atDay(1).minusDays(1));
+		final Iterator<LocalDate> dates = toDateIterator(year.atDay(1), min(LocalDate.now(), year.plusYears(1).atDay(1).minusDays(1)));
 		return WebFluxUtils.SSE(Flux.fromIterable(() -> dates)
 				.map(stockService::checkDataStoreType));
 	}
 
 	@GetMapping("/init/month/{yearMonth}")
 	public Flux<ServerSentEvent<DataStoringModel>> init(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) YearMonth yearMonth) {
-		final Iterator<LocalDate> dates = toDateIterator(yearMonth.atDay(1), yearMonth.atEndOfMonth());
+		final Iterator<LocalDate> dates = toDateIterator(yearMonth.atDay(1), min(LocalDate.now(), yearMonth.atEndOfMonth()));
 		return WebFluxUtils.SSE(Flux.fromIterable(() -> dates)
 				.map(date -> {
 					try {
@@ -72,6 +72,10 @@ public class StockApi {
 				return currDate;
 			}
 		};
+	}
+
+	private LocalDate min(LocalDate d1, LocalDate d2) {
+		return d1.isBefore(d2) ? d1 : d2;
 	}
 
 }
