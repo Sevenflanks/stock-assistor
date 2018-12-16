@@ -80,7 +80,7 @@ $(function() {
     eventSource.onerror = evt => {
       eventSource.close();
       $saMonthBtn.dimmer('hide');
-      $saDateAll.dimmer('hide');
+      $(`.sa-month[data-date="${yearMonth}"] .sa-date.dimmed`).dimmer('hide');
     };
   }
 

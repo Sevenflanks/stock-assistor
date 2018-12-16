@@ -1,6 +1,7 @@
 package tw.org.sevenflanks.sa.base.msg.enums;
 
 import static tw.org.sevenflanks.sa.base.msg.enums.MsgLevel.DANGER;
+import static tw.org.sevenflanks.sa.base.msg.enums.MsgLevel.IMPORTANT;
 import static tw.org.sevenflanks.sa.base.msg.enums.MsgLevel.INFO;
 
 import java.text.MessageFormat;
@@ -18,7 +19,7 @@ public enum MsgTemplate {
 	API9999(DANGER, "發生預期外的錯誤"),
 
 	RMAPI01(DANGER, "遠端API連線異常"),
-	RMAPI02(DANGER, "遠端API提供資料為空"),
+	RMAPI02(IMPORTANT, "遠端API提供資料為空"),
 	RMAPI03(DANGER, "遠端API回應非成功代碼"),
 
 	SYS9999(INFO, "系統異常"),

@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
+import tw.org.sevenflanks.sa.base.msg.enums.MsgLevel;
+import tw.org.sevenflanks.sa.base.msg.exception.MsgException;
 import tw.org.sevenflanks.sa.base.msg.model.MsgBody;
 import tw.org.sevenflanks.sa.base.utils.WebFluxUtils;
 import tw.org.sevenflanks.sa.stock.model.DataStoringModel;
@@ -45,8 +47,16 @@ public class StockApi {
 				.map(date -> {
 					try {
 						return stockService.syncAllToFileAndDb(date);
+					} catch (MsgException e) {
+						if (e.getMsg().getLevel().isGE(MsgLevel.IMPORTANT)) {
+							log.info("[{}] syncAllToFileAndDb failed: {}", date, e.getMsg());
+							return DataStoringModel.error(date, e);
+						} else {
+							log.info("[{}] syncAllToFileAndDb failed", date, e);
+						}
+						return DataStoringModel.error(date, e);
 					} catch (Exception e) {
-						log.info("[{}] syncAllToFileAndDb failed" , date, e);
+						log.info("[{}] syncAllToFileAndDb failed", date, e);
 						return DataStoringModel.error(date, e);
 					}
 				}));
