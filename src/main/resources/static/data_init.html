@@ -13,14 +13,37 @@
 </head>
 <body>
 <div class="ui large container">
+    <br>
+    <div class="ui pagination menu" id="yearPage">
+        <a class="item" data-year="2018">
+            2018
+        </a>
+        <a class="item" data-year="2019">
+            2019
+        </a>
+    </div>
+    <br>
     <div class="ui cards" id="dateGrid">
     </div>
 </div>
 </body>
 <script>
 $(function() {
-  render('2018');
-  check('2018');
+  let currentYear = moment().format('YYYY');
+  $(`#yearPage a.item[data-year="${currentYear}"]`).addClass('active');
+  render(currentYear);
+  check(currentYear);
+
+    $('#yearPage a.item').on('click', e => {
+        let $target = $(e.target);
+        if (!$target.hasClass('active')) {
+            $('#yearPage a.item').removeClass('active');
+            let choosedYear = $target.data('year');
+            $target.addClass('active');
+            render(choosedYear);
+            check(choosedYear);
+        }
+    });
 
   /** 根據資料來對日期格子上色 */
   function renderDateColor(date, totleType, msg) {

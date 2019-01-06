@@ -9,8 +9,11 @@
     5. <s>爬取上櫃股票行情</s>`(done)`
     6. <s>爬取上櫃股票融資餘額</s>`(done)`
     7. <s>WebUI-資料爬取控制</s>`(early release)`
-    8. WebUI-資料視覺化
+    8. WebUI-資料視覺化 `pending`
     9. WebUI-資料分析
+        - Sng001 `(testing)`
+        - Sng002
+        - Sng003
 
 ## Env
 - 基本需求環境

@@ -6,6 +6,7 @@ import org.springframework.retry.annotation.EnableRetry;
 
 @EnableRetry
 @SpringBootApplication
+//@EntityScan(basePackageClasses = {StockAssistorApplication.class, Jsr310JpaConverters.class})
 public class StockAssistorApplication {
 
 	public static void main(String[] args) {
