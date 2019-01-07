@@ -13,7 +13,6 @@ import tw.org.sevenflanks.sa.stock.entity.TwseStock;
 import tw.org.sevenflanks.sa.stock.model.CompanyVo;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,7 +55,7 @@ public class Sng001 implements SingleRule<Sng001.Factor> {
 
 	private boolean isOtcMatch(String uid, LocalDate startDate, Factor factor) {
 		// 連續 a 個營業日
-		final List<LocalDate> recordDates = otcStockDao.findRecordDates(uid, startDate, factor.a).stream().map(Date::toLocalDate).collect(Collectors.toList());
+		final List<LocalDate> recordDates = otcStockDao.findRecordDates(uid, startDate, factor.a);
 		log.debug("checking Sng001.OTC uid:{}, recordDates:{}", uid, recordDates.stream().map(LocalDate::toString).collect(Collectors.joining(",")));
 		return recordDates.stream()
 				.allMatch(date -> {
@@ -74,7 +73,7 @@ public class Sng001 implements SingleRule<Sng001.Factor> {
 
 	private boolean isTwseMatch(String uid, LocalDate startDate, Factor factor) {
 		// 連續 a 個營業日
-		final List<LocalDate> recordDates = twseStockDao.findRecordDates(uid, startDate, factor.a).stream().map(Date::toLocalDate).collect(Collectors.toList());
+		final List<LocalDate> recordDates = twseStockDao.findRecordDates(uid, startDate, factor.a);
 		log.debug("checking Sng001.TWSE uid:{}, recordDates:{}", uid, recordDates.stream().map(LocalDate::toString).collect(Collectors.joining(",")));
 		return recordDates.stream()
 				.allMatch(date -> {
