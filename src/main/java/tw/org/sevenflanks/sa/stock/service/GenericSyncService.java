@@ -1,5 +1,15 @@
 package tw.org.sevenflanks.sa.stock.service;
 
+import org.jooq.lambda.Unchecked;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tw.org.sevenflanks.sa.base.msg.enums.MsgTemplate;
+import tw.org.sevenflanks.sa.base.msg.exception.MsgException;
+import tw.org.sevenflanks.sa.config.GlobalConstants;
+import tw.org.sevenflanks.sa.stock.dao.SyncDateDao;
+import tw.org.sevenflanks.sa.stock.entity.SyncDateEntity;
+import tw.org.sevenflanks.sa.stock.enums.DataStoreType;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,17 +18,6 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
-
-import org.jooq.lambda.Unchecked;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import tw.org.sevenflanks.sa.base.msg.enums.MsgTemplate;
-import tw.org.sevenflanks.sa.base.msg.exception.MsgException;
-import tw.org.sevenflanks.sa.config.GlobalConstants;
-import tw.org.sevenflanks.sa.stock.dao.SyncDateDao;
-import tw.org.sevenflanks.sa.stock.entity.SyncDateEntity;
-import tw.org.sevenflanks.sa.stock.enums.DataStoreType;
 
 public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDateDao<T>> {
 	Logger log = LoggerFactory.getLogger(GenericSyncService.class);
@@ -56,17 +55,19 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 		return DataStoreType.NONE;
 	}
 
-	default void syncToFileAndDb(LocalDate date) throws IOException {
+	default void sync(LocalDate date, boolean fetchFromApi) throws IOException {
 		// 先從檔案資料讀取，沒有的話再從Api撈
 		final Optional<List<T>> fileData = this.loadFromFile(date);
 		final Optional<List<T>> dataOp;
 		if (fileData.isPresent()) {
 			dataOp = fileData;
 			log.info("[{}@{}] fetched dataOp success", this.zhName(), date);
-		} else {
+		} else if (fetchFromApi) {
 			dataOp = Optional.of(this.fetch(date)).filter(d -> !d.isEmpty());
 			dataOp.ifPresent(Unchecked.consumer(data -> this.saveToFile(date, data)));
 			dataOp.orElseThrow(() -> new MsgException(MsgTemplate.RMAPI02.build("本日無資料 {0}:{1}", this.zhName(), date)));
+		} else {
+			dataOp = Optional.empty();
 		}
 
 		if (dao().countBySyncDate(date) <= 0) {

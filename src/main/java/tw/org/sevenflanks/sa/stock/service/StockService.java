@@ -1,14 +1,13 @@
 package tw.org.sevenflanks.sa.stock.service;
 
-import java.io.IOException;
-import java.time.LocalDate;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import lombok.extern.slf4j.Slf4j;
 import tw.org.sevenflanks.sa.stock.model.DataStoringModel;
+
+import java.io.IOException;
+import java.time.LocalDate;
 
 @Slf4j
 @Service
@@ -45,13 +44,24 @@ public class StockService {
 				.build();
 	}
 
-	public DataStoringModel syncAllToFileAndDb(LocalDate date) throws IOException {
-		twseCompanySyncService.syncToFileAndDb(date);
-		twseStockSyncService.syncToFileAndDb(date);
-		twseRgremainSyncService.syncToFileAndDb(date);
-		otcCompanySyncService.syncToFileAndDb(date);
-		otcStockSyncService.syncToFileAndDb(date);
-		otcRgremainSyncService.syncToFileAndDb(date);
+	public DataStoringModel syncAll(LocalDate date) throws IOException {
+		twseCompanySyncService.sync(date, true);
+		twseStockSyncService.sync(date, true);
+		twseRgremainSyncService.sync(date, true);
+		otcCompanySyncService.sync(date, true);
+		otcStockSyncService.sync(date, true);
+		otcRgremainSyncService.sync(date, true);
+
+		return checkDataStoreType(date);
+	}
+
+	public DataStoringModel syncAllFromFile(LocalDate date) throws IOException {
+		twseCompanySyncService.sync(date, false);
+		twseStockSyncService.sync(date, false);
+		twseRgremainSyncService.sync(date, false);
+		otcCompanySyncService.sync(date, false);
+		otcStockSyncService.sync(date, false);
+		otcRgremainSyncService.sync(date, false);
 
 		return checkDataStoreType(date);
 	}

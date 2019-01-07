@@ -86,13 +86,13 @@ $(function() {
   }
 
   /** 載入資料(by月份) */
-  function fetchMonth(yearMonth) {
+  function fetchMonth(yearMonth, type) {
     let $saMonthBtn = $(`.ui.bottom[data-date="${yearMonth}"]`);
     let $saDateAll = $(`.sa-month[data-date="${yearMonth}"] .sa-date`).not('.sa-empty');
     $saDateAll.dimmer('show');
     $saMonthBtn.dimmer('show');
 
-    let eventSource = new EventSource(`/api/stock/init/month/${yearMonth}`);
+    let eventSource = new EventSource(`/api/stock/init/${type}/month/${yearMonth}`);
     eventSource.onmessage = evt => {
       // 抓出每一天的格子，並根據結果上色
       let data = JSON.parse(evt.data);
@@ -145,17 +145,36 @@ $(function() {
         </div>
     `);
     // 月份同步按鈕
-    let $syncBtn = $(`
-        <div class="ui bottom attached button" data-date="${yearMonth}">
-            <i class="sync alternate icon"></i>Sync data
+    let $syncBtns = $(`
+    <div class="ui two buttons">
+    </div>
+    `);
+
+    let $syncApiBtn = $(`
+        <div class="ui bottom button" data-date="${yearMonth}">
+            <i class="sync alternate icon"></i>SyncAPI
             <div class="ui inverted dimmer">
                 <div class="ui small loader"></div>
             </div>
         </div>
     `).on('click', e => {
-      fetchMonth($(e.target).attr("data-date"));
+      fetchMonth($(e.target).attr("data-date"), 'api');
     });
-    $month.append($syncBtn);
+
+    let $syncFileBtn = $(`
+    <div class="ui bottom button" data-date="${yearMonth}">
+        <i class="sync alternate icon"></i>SyncFile
+        <div class="ui inverted dimmer">
+            <div class="ui small loader"></div>
+        </div>
+    </div>
+    `).on('click', e => {
+        fetchMonth($(e.target).attr("data-date"), 'file');
+    });
+
+    $syncBtns.append($syncApiBtn);
+    $syncBtns.append($syncFileBtn);
+    $month.append($syncBtns);
 
     // 日期要塞的位置
     let $monthDesc = $month.find('div.description');
