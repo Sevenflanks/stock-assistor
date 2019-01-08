@@ -12,8 +12,8 @@
     8. WebUI-資料視覺化 `pending`
     9. WebUI-資料分析
         - Sng001 `(testing)`
-        - Sng002
-        - Sng003
+        - Sng002 `(testing)`
+        - Sng003 `(request checking)`
 
 ## Env
 - 基本需求環境
