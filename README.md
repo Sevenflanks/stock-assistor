@@ -13,7 +13,7 @@
     9. WebUI-資料分析
         - Sng001 `(testing)`
         - Sng002 `(testing)`
-        - Sng003 `(request checking)`
+        - Sng003 `(testing)`
 
 ## Env
 - 基本需求環境

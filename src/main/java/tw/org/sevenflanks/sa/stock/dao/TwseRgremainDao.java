@@ -30,4 +30,7 @@ public interface TwseRgremainDao extends SyncDateDao<TwseRgremain> {
 	@Query(value = "SELECT AVG(MARGIN_BALANCE) FROM TWSE_RGREMAIN WHERE UID = :uid AND SYNC_DATE IN (SELECT DISTINCT SYNC_DATE FROM TWSE_RGREMAIN WHERE UID = :uid AND SYNC_DATE < :from ORDER BY SYNC_DATE DESC LIMIT :top)", nativeQuery = true)
 	BigDecimal findAvgMarginBalance(String uid, LocalDate from, int top);
 
+	@Query(value = "SELECT AVG(BORROWING_BALANCE) FROM TWSE_RGREMAIN WHERE UID = :uid AND SYNC_DATE IN (SELECT DISTINCT SYNC_DATE FROM TWSE_RGREMAIN WHERE UID = :uid AND SYNC_DATE < :from ORDER BY SYNC_DATE DESC LIMIT :top)", nativeQuery = true)
+	BigDecimal findAvgBorrowingBalance(String uid, LocalDate from, int top);
+
 }

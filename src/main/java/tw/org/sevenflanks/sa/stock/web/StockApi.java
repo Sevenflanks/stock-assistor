@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.ParallelFlux;
 import tw.org.sevenflanks.sa.base.msg.enums.MsgLevel;
 import tw.org.sevenflanks.sa.base.msg.enums.MsgTemplate;
 import tw.org.sevenflanks.sa.base.msg.exception.MsgException;
@@ -35,20 +36,22 @@ public class StockApi {
 	private StockService stockService;
 
 	@GetMapping("/check/year/{year}")
-	public Flux<ServerSentEvent<DataStoringModel>> check(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Year year) {
+	public ParallelFlux<ServerSentEvent<DataStoringModel>> check(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Year year) {
 		final Iterator<LocalDate> dates = toDateIterator(
 				min(LocalDate.now(), year.atDay(1).with(TemporalAdjusters.lastDayOfYear())),
 				year.atDay(1));
 		return WebFluxUtils.SSE(Flux.fromIterable(() -> dates)
+				.parallel()
 				.map(stockService::checkDataStoreType));
 	}
 
 	@GetMapping("/init/{type}/month/{yearMonth}")
-	public Flux<ServerSentEvent<DataStoringModel>> init(@PathVariable String type, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) YearMonth yearMonth) {
+	public ParallelFlux<ServerSentEvent<DataStoringModel>> init(@PathVariable String type, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) YearMonth yearMonth) {
 		final Iterator<LocalDate> dates = toDateIterator(
 				min(LocalDate.now(), yearMonth.atEndOfMonth()),
 				yearMonth.atDay(1));
 		return WebFluxUtils.SSE(Flux.fromIterable(() -> dates)
+				.parallel()
 				.map(date -> {
 					try {
 						if ("api".equals(type)) {
