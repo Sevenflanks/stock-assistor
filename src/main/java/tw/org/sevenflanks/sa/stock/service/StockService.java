@@ -35,33 +35,35 @@ public class StockService {
 	public DataStoringModel checkDataStoreType(LocalDate date) {
 		return DataStoringModel.builder()
 				.dataDate(date)
-				.otcCompany(otcCompanySyncService.checkDataStoreType(date))
-				.otcRgremain(otcRgremainSyncService.checkDataStoreType(date))
-				.otcStock(otcStockSyncService.checkDataStoreType(date))
-				.twseCompany(twseCompanySyncService.checkDataStoreType(date))
-				.twseRgremain(twseRgremainSyncService.checkDataStoreType(date))
-				.twseStock(twseStockSyncService.checkDataStoreType(date))
+				.otcCompany(otcCompanySyncService.check(date))
+				.otcRgremain(otcRgremainSyncService.check(date))
+				.otcStock(otcStockSyncService.check(date))
+				.twseCompany(twseCompanySyncService.check(date))
+				.twseRgremain(twseRgremainSyncService.check(date))
+				.twseStock(twseStockSyncService.check(date))
 				.build();
 	}
 
 	public DataStoringModel syncAll(LocalDate date) throws IOException {
-		twseCompanySyncService.sync(date, true);
 		twseStockSyncService.sync(date, true);
 		twseRgremainSyncService.sync(date, true);
-		otcCompanySyncService.sync(date, true);
 		otcStockSyncService.sync(date, true);
 		otcRgremainSyncService.sync(date, true);
+
+		twseCompanySyncService.sync(date, true);
+		otcCompanySyncService.sync(date, true);
 
 		return checkDataStoreType(date);
 	}
 
 	public DataStoringModel syncAllFromFile(LocalDate date) throws IOException {
-		twseCompanySyncService.sync(date, false);
 		twseStockSyncService.sync(date, false);
 		twseRgremainSyncService.sync(date, false);
-		otcCompanySyncService.sync(date, false);
 		otcStockSyncService.sync(date, false);
 		otcRgremainSyncService.sync(date, false);
+
+		twseCompanySyncService.sync(date, false);
+		otcCompanySyncService.sync(date, false);
 
 		return checkDataStoreType(date);
 	}

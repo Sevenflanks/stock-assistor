@@ -35,7 +35,7 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 	/** 中文名稱 */
 	String zhName();
 
-	default DataStoreType checkDataStoreType(LocalDate date) {
+	default DataStoreType check(LocalDate date) {
 		try {
 			final long dbCount = dao().countBySyncDate(date);
 			if (dbCount > 0) {

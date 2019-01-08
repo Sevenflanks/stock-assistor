@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import tw.org.sevenflanks.sa.base.msg.enums.MsgLevel;
 import tw.org.sevenflanks.sa.base.msg.enums.MsgTemplate;
@@ -19,6 +22,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Year;
 import java.time.YearMonth;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -32,14 +36,18 @@ public class StockApi {
 
 	@GetMapping("/check/year/{year}")
 	public Flux<ServerSentEvent<DataStoringModel>> check(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Year year) {
-		final Iterator<LocalDate> dates = toDateIterator(year.atDay(1), min(LocalDate.now(), year.plusYears(1).atDay(1).minusDays(1)));
+		final Iterator<LocalDate> dates = toDateIterator(
+				min(LocalDate.now(), year.atDay(1).with(TemporalAdjusters.lastDayOfYear())),
+				year.atDay(1));
 		return WebFluxUtils.SSE(Flux.fromIterable(() -> dates)
 				.map(stockService::checkDataStoreType));
 	}
 
 	@GetMapping("/init/{type}/month/{yearMonth}")
 	public Flux<ServerSentEvent<DataStoringModel>> init(@PathVariable String type, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) YearMonth yearMonth) {
-		final Iterator<LocalDate> dates = toDateIterator(yearMonth.atDay(1), min(LocalDate.now(), yearMonth.atEndOfMonth()));
+		final Iterator<LocalDate> dates = toDateIterator(
+				min(LocalDate.now(), yearMonth.atEndOfMonth()),
+				yearMonth.atDay(1));
 		return WebFluxUtils.SSE(Flux.fromIterable(() -> dates)
 				.map(date -> {
 					try {
@@ -70,18 +78,18 @@ public class StockApi {
 		return MsgBody.ok(stockService.syncAll(date));
 	}
 
-	private Iterator<LocalDate> toDateIterator(LocalDate firstDate, LocalDate lastDate) {
+	private Iterator<LocalDate> toDateIterator(LocalDate start, LocalDate end) {
 		return new Iterator<LocalDate>() {
 			private LocalDate currDate = null;
 
 			@Override
 			public boolean hasNext() {
-				return currDate == null || currDate.isBefore(lastDate);
+				return currDate == null || currDate.isAfter(end);
 			}
 
 			@Override
 			public LocalDate next() {
-				currDate = Optional.ofNullable(currDate).map(d -> d.plusDays(1)).orElse(firstDate);
+				currDate = Optional.ofNullable(currDate).map(d -> d.minusDays(1)).orElse(start);
 				return currDate;
 			}
 		};

@@ -1,21 +1,19 @@
 package tw.org.sevenflanks.sa.base.msg.enums;
 
-import static tw.org.sevenflanks.sa.base.msg.enums.MsgLevel.DANGER;
-import static tw.org.sevenflanks.sa.base.msg.enums.MsgLevel.IMPORTANT;
-import static tw.org.sevenflanks.sa.base.msg.enums.MsgLevel.INFO;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import tw.org.sevenflanks.sa.base.msg.exception.MsgException;
+import tw.org.sevenflanks.sa.base.msg.model.Msg;
 
 import java.text.MessageFormat;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
-import tw.org.sevenflanks.sa.base.msg.exception.MsgException;
-import tw.org.sevenflanks.sa.base.msg.model.Msg;
+import static tw.org.sevenflanks.sa.base.msg.enums.MsgLevel.*;
 
 public enum MsgTemplate {
 	MSG0000(INFO, "正常"),
 
 	API0001(DANGER, "參數有誤"),
+	API0002(INFO, "因特殊規則而不執行"),
 	API9999(DANGER, "發生預期外的錯誤"),
 
 	RMAPI01(DANGER, "遠端API連線異常"),

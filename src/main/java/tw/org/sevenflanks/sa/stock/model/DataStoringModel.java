@@ -1,14 +1,14 @@
 package tw.org.sevenflanks.sa.stock.model;
 
-import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.stream.Stream;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import tw.org.sevenflanks.sa.stock.enums.DataStoreType;
+
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Getter
 @Setter
@@ -33,8 +33,12 @@ public class DataStoringModel {
 				.build();
 	}
 
+	/**
+	 * 取得總計的類型.
+	 * 由於公司資料不見得會每一日都有儲存，因此不檢查
+	 */
 	public DataStoreType getTotalType() {
-		return Stream.of(otcCompany, otcRgremain, otcStock, twseCompany, twseRgremain, twseStock)
+		return Stream.of(otcRgremain, otcStock, twseRgremain, twseStock)
 				.map(t -> Optional.ofNullable(t).orElse(DataStoreType.FAILED))
 				.min(Comparator.comparing(DataStoreType::getLevel))
 				.orElse(DataStoreType.NONE);
