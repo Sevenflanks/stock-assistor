@@ -1,15 +1,6 @@
 .sa-date {
-    cursor: pointer;
-
-    /*margin: 2px 2px;*/
-    /*padding: 2px 5px;*/
-    /*background-color: #ffffff;*/
-    /*border-radius: 5px;*/
-
-    /*text-align: center;*/
-    /*vertical-align: middle;*/
-
-    transition-duration: 0.2s;
+    /*cursor: pointer;*/
+    transition-duration: 0.5s;
 }
 
 .sa-empty.sa-date {
@@ -26,16 +17,8 @@
 }
 
 .ui.card.sa-month {
-    /*margin: 5px 0px;*/
-    /*padding: 6px 3px;*/
-    /*background-color: #fff5f1;*/
-    /*border: 1px #ebe2de solid;*/
-    /*border-radius: 5px;*/
     width: 300px;
-}
-
-.sa-month > :first-child {
-    /*background-color: #dcd3d0;*/
+    transition-duration: 0.5s;
 }
 
 .ui.large.container {

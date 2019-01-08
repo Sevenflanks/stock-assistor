@@ -152,7 +152,7 @@ $(function() {
 
     let $syncApiBtn = $(`
         <div class="ui bottom button" data-date="${yearMonth}">
-            <i class="sync alternate icon"></i>SyncAPI
+            <i class="sync alternate icon"></i>Sync@API
             <div class="ui inverted dimmer">
                 <div class="ui small loader"></div>
             </div>
@@ -163,7 +163,7 @@ $(function() {
 
     let $syncFileBtn = $(`
     <div class="ui bottom button" data-date="${yearMonth}">
-        <i class="sync alternate icon"></i>SyncFile
+        <i class="sync alternate icon"></i>Sync@File
         <div class="ui inverted dimmer">
             <div class="ui small loader"></div>
         </div>
@@ -173,6 +173,7 @@ $(function() {
     });
 
     $syncBtns.append($syncApiBtn);
+    $syncBtns.append($('<div class="or"></div>'));
     $syncBtns.append($syncFileBtn);
     $month.append($syncBtns);
 
