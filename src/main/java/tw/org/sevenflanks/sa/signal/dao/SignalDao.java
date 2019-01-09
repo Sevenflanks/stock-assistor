@@ -6,5 +6,5 @@ import tw.org.sevenflanks.sa.base.data.GenericDao;
 import tw.org.sevenflanks.sa.signal.entity.Signal;
 
 @Repository
-public interface SingalDao extends GenericDao<Signal> {
+public interface SignalDao extends GenericDao<Signal> {
 }

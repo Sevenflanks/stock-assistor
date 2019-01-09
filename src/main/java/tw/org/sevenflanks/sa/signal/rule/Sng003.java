@@ -1,6 +1,9 @@
 package tw.org.sevenflanks.sa.signal.rule;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,7 +26,7 @@ import java.util.stream.Stream;
  */
 @Slf4j
 @Component
-public class Sng003 implements SingleRule<Sng003.Factor> {
+public class Sng003 implements SignalRule<Sng003.Factor> {
 
 	@Autowired
 	private OtcCompanyDao otcCompanyDao;
@@ -89,10 +92,13 @@ public class Sng003 implements SingleRule<Sng003.Factor> {
 				});
 	}
 
+	@Getter
 	@Builder
-	static class Factor {
-		private final int a;
-		private final int b;
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class Factor implements SignalRule.Factor {
+		private int a;
+		private int b;
 
 		@Override
 		public String toString() {

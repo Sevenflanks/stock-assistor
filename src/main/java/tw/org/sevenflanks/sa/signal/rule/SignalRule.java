@@ -4,12 +4,16 @@ import tw.org.sevenflanks.sa.stock.model.CompanyVo;
 
 import java.util.List;
 
-public interface SingleRule<FACTOR> {
+public interface SignalRule<FACTOR extends SignalRule.Factor> {
 
 	default String code() {
 		return this.getClass().getSimpleName();
 	}
 
 	List<CompanyVo> getMatch(FACTOR factor);
+
+	interface Factor {
+
+	}
 
 }
