@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tw.org.sevenflanks.sa.signal.dao.SignalDao;
-import tw.org.sevenflanks.sa.signal.model.SigalResult;
+import tw.org.sevenflanks.sa.signal.model.SignalResult;
 import tw.org.sevenflanks.sa.signal.model.SignalTask;
 import tw.org.sevenflanks.sa.signal.rule.SignalRule;
 import tw.org.sevenflanks.sa.stock.dao.OtcCompanyDao;
@@ -45,7 +45,7 @@ public class SignalService {
 		}));
 	}
 
-	public Collection<SigalResult> run() {
+	public Collection<SignalResult> run() {
 
 		final List<OtcCompany> otcCompanies = otcCompanyDao.findByLastSyncDate();
 		final List<TwseCompany> twseCompanies = twseCompanyDao.findByLastSyncDate();
@@ -59,7 +59,7 @@ public class SignalService {
 				})
 				.toArray(SignalTask[]::new);
 
-		final HashMap<String, SigalResult> result = new HashMap<>();
+		final HashMap<String, SignalResult> result = new HashMap<>();
 		try {
 			for (SignalTask task : tasks) {
 				toResult(result, task);
@@ -71,12 +71,12 @@ public class SignalService {
 		return result.values();
 	}
 
-	private void toResult(HashMap<String, SigalResult> result, SignalTask task) throws ExecutionException, InterruptedException {
+	private void toResult(HashMap<String, SignalResult> result, SignalTask task) throws ExecutionException, InterruptedException {
 		task.getFuture().get().forEach(c -> {
 			if (result.containsKey(c.getUid())) {
 				result.get(c.getUid()).getMatchs().add(task.getSignal());
 			} else {
-				result.put(c.getUid(), new SigalResult(c, Lists.newArrayList(task.getSignal())));
+				result.put(c.getUid(), new SignalResult(c, Lists.newArrayList(task.getSignal())));
 			}
 		});
 	}

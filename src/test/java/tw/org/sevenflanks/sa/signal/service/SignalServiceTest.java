@@ -11,7 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import tw.org.sevenflanks.sa.signal.dao.SignalDao;
 import tw.org.sevenflanks.sa.signal.entity.Signal;
-import tw.org.sevenflanks.sa.signal.model.SigalResult;
+import tw.org.sevenflanks.sa.signal.model.SignalResult;
 import tw.org.sevenflanks.sa.signal.rule.Rule001;
 import tw.org.sevenflanks.sa.signal.rule.Rule002;
 import tw.org.sevenflanks.sa.signal.rule.Rule003;
@@ -44,8 +44,8 @@ public class SignalServiceTest {
 	@Transactional
 	@Rollback
 	public void run() {
-		final Function<SigalResult, String> byUid = r -> r.getCompany().getUid();
-		final Function<SigalResult, Integer> bySize = r -> r.getMatchs().size();
+		final Function<SignalResult, String> byUid = r -> r.getCompany().getUid();
+		final Function<SignalResult, Integer> bySize = r -> r.getMatchs().size();
 
 		signalService.run().stream()
 				.sorted(Comparator.comparing(bySize, Comparator.reverseOrder()).thenComparing(byUid))

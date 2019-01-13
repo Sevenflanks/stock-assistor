@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SigalResult {
+public class SignalResult {
 
 	private CompanyVo company;
 
