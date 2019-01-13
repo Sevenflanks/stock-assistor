@@ -13,20 +13,18 @@ import tw.org.sevenflanks.sa.stock.dao.TwseCompanyDao;
 import tw.org.sevenflanks.sa.stock.dao.TwseStockDao;
 import tw.org.sevenflanks.sa.stock.entity.OtcStock;
 import tw.org.sevenflanks.sa.stock.entity.TwseStock;
-import tw.org.sevenflanks.sa.stock.model.CompanyVo;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 成交量連續 a 個營業日低於近 b 個營業日平均值
  */
 @Slf4j
 @Component
-public class Sng001 implements SignalRule<Sng001.Factor> {
+public class Rule001 extends SignalRule<Rule001.Factor> {
 
 	@Autowired
 	private OtcCompanyDao otcCompanyDao;
@@ -41,25 +39,10 @@ public class Sng001 implements SignalRule<Sng001.Factor> {
 	private TwseStockDao twseStockDao;
 
 	@Override
-	public List<CompanyVo> getMatch(Factor factor) {
-		final LocalDate now = LocalDate.now();
-		log.info("checking Sng001 {}, start:{}", factor, now);
-
-		return Stream.concat(
-				otcCompanyDao.findByLastSyncDate().stream()
-						.filter(company -> isOtcMatch(company.getUid(), now, factor))
-						.map(CompanyVo::new),
-				twseCompanyDao.findByLastSyncDate().stream()
-						.filter(company -> isTwseMatch(company.getUid(), now, factor))
-						.map(CompanyVo::new)
-
-		).collect(Collectors.toList());
-	}
-
-	private boolean isOtcMatch(String uid, LocalDate startDate, Factor factor) {
+	protected boolean isOtcMatch(String uid, LocalDate baseDate, Factor factor) {
 		// 連續 a 個營業日
-		final List<LocalDate> recordDates = otcStockDao.findRecordDates(uid, startDate, factor.a);
-		log.debug("checking Sng001.OTC uid:{}, recordDates:{}", uid, recordDates.stream().map(LocalDate::toString).collect(Collectors.joining(",")));
+		final List<LocalDate> recordDates = otcStockDao.findRecordDates(uid, baseDate, factor.a);
+		log.debug("checking {}.OTC uid:{}, recordDates:{}", this.code(), uid, recordDates.stream().map(LocalDate::toString).collect(Collectors.joining(",")));
 		return recordDates.stream()
 				.allMatch(date -> {
 					final OtcStock target = otcStockDao.findByUidAndSyncDate(uid, date);
@@ -69,15 +52,16 @@ public class Sng001 implements SignalRule<Sng001.Factor> {
 					// target日 的成交量是否低於 近 b 個營業日平均值
 					final boolean result = targetSharesTraded.compareTo(avgSharesTraded) <= 0;
 
-					log.debug("\tchecking Sng001.OTC result:{}, uid:{}, a.date:{}, a.target:{}, avg.in.{}:{}", result, uid, date, targetSharesTraded, factor.b, avgSharesTraded);
+					log.debug("\tchecking {}.OTC result:{}, uid:{}, a.date:{}, a.target:{}, avg.in.{}:{}", this.code(), result, uid, date, targetSharesTraded, factor.b, avgSharesTraded);
 					return result;
 				});
 	}
 
-	private boolean isTwseMatch(String uid, LocalDate startDate, Factor factor) {
+	@Override
+	protected boolean isTwseMatch(String uid, LocalDate baseDate, Factor factor) {
 		// 連續 a 個營業日
-		final List<LocalDate> recordDates = twseStockDao.findRecordDates(uid, startDate, factor.a);
-		log.debug("checking Sng001.TWSE uid:{}, recordDates:{}", uid, recordDates.stream().map(LocalDate::toString).collect(Collectors.joining(",")));
+		final List<LocalDate> recordDates = twseStockDao.findRecordDates(uid, baseDate, factor.a);
+		log.debug("checking {}.TWSE uid:{}, recordDates:{}", this.code(), uid, recordDates.stream().map(LocalDate::toString).collect(Collectors.joining(",")));
 		return recordDates.stream()
 				.allMatch(date -> {
 					final TwseStock target = twseStockDao.findByUidAndSyncDate(uid, date);
@@ -87,7 +71,7 @@ public class Sng001 implements SignalRule<Sng001.Factor> {
 					// target日 的成交量是否低於 近 b 個營業日平均值
 					final boolean result = targetSharesTraded.compareTo(avgSharesTraded) <= 0;
 
-					log.debug("\tchecking Sng001.TWSE result:{}, uid:{}, a.date:{}, a.target:{}, avg.in.{}:{}", result, uid, date, targetSharesTraded, factor.b, avgSharesTraded);
+					log.debug("\tchecking {}.TWSE result:{}, uid:{}, a.date:{}, a.target:{}, avg.in.{}:{}", this.code(), result, uid, date, targetSharesTraded, factor.b, avgSharesTraded);
 					return result;
 				});
 	}

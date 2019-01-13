@@ -18,6 +18,12 @@ import javax.persistence.Lob;
 public class Signal extends GenericEntity {
 
 	@Column
+	private String code;
+
+	@Column
+	private String name;
+
+	@Column
 	private String ruleCode;
 
 	@Column
@@ -32,7 +38,9 @@ public class Signal extends GenericEntity {
 		}
 	}
 
-	public Signal(SignalRule rule, SignalRule.Factor factor) {
+	public Signal(String code, String name, SignalRule rule, SignalRule.Factor factor) {
+		this.code = code;
+		this.name = name;
 		this.ruleCode = rule.code();
 		this.factor = JsonModel.builder().value(factor).build();
 	}
