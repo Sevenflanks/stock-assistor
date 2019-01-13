@@ -1,5 +1,7 @@
 package tw.org.sevenflanks.sa.signal.dao;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,12 +35,14 @@ public class SignalDaoTest {
 
 		final int a = 5;
 		final int b = 20;
-		final Signal signal = new Signal("Test-01", "測試", rule001, Rule001.Factor.builder().a(a).b(b).build());
+		final Signal signal = new Signal("Test-01", "測試", "測", rule001, Rule001.Factor.builder().a(a).b(b).build());
 		final Signal saved = signalDao.save(signal);
 		final Signal found = Optional.of(saved)
 				.map(GenericEntity::getId)
 				.flatMap(signalDao::findById)
 				.orElseThrow(() -> new RuntimeException("entity not found"));
+
+		System.out.println(ToStringBuilder.reflectionToString(signal, ToStringStyle.SHORT_PREFIX_STYLE));
 
 		Assertions.assertThat(found).isNotNull();
 		Assertions.assertThat(found.getRuleCode()).isEqualTo(rule001.code());
