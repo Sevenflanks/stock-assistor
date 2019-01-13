@@ -3,9 +3,12 @@ package tw.org.sevenflanks.sa.signal.service;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tw.org.sevenflanks.sa.base.data.JsonListModel;
+import tw.org.sevenflanks.sa.base.data.JsonModel;
 import tw.org.sevenflanks.sa.signal.dao.SignalDao;
-import tw.org.sevenflanks.sa.signal.model.SignalResult;
+import tw.org.sevenflanks.sa.signal.entity.SignalResult;
 import tw.org.sevenflanks.sa.signal.model.SignalTask;
+import tw.org.sevenflanks.sa.signal.model.SignalVo;
 import tw.org.sevenflanks.sa.signal.rule.SignalRule;
 import tw.org.sevenflanks.sa.stock.dao.OtcCompanyDao;
 import tw.org.sevenflanks.sa.stock.dao.TwseCompanyDao;
@@ -46,7 +49,6 @@ public class SignalService {
 	}
 
 	public Collection<SignalResult> run() {
-
 		final List<OtcCompany> otcCompanies = otcCompanyDao.findByLastSyncDate();
 		final List<TwseCompany> twseCompanies = twseCompanyDao.findByLastSyncDate();
 		final ExecutorService executor = Executors.newCachedThreadPool();
@@ -74,9 +76,12 @@ public class SignalService {
 	private void toResult(HashMap<String, SignalResult> result, SignalTask task) throws ExecutionException, InterruptedException {
 		task.getFuture().get().forEach(c -> {
 			if (result.containsKey(c.getUid())) {
-				result.get(c.getUid()).getMatchs().add(task.getSignal());
+				result.get(c.getUid()).getMatchs().get().add(new SignalVo(task.getSignal()));
 			} else {
-				result.put(c.getUid(), new SignalResult(c, Lists.newArrayList(task.getSignal())));
+				result.put(c.getUid(), new SignalResult(
+						JsonModel.<CompanyVo>builder().value(c).build(),
+						JsonListModel.<SignalVo>builder().value(Lists.newArrayList(new SignalVo(task.getSignal()))).build())
+				);
 			}
 		});
 	}
