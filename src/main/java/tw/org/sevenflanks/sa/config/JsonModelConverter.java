@@ -35,17 +35,9 @@ public class JsonModelConverter implements AttributeConverter<JsonModel<?>, Stri
 
 	@Override
 	public JsonModel<?> convertToEntityAttribute(String s) {
-		try {
-			if (s != null) {
-				final String[] splited = s.split(SPLITER);
-				final Class<?> valueClass = Class.forName(splited[0]);
-				final Object value = OM.readValue(splited[1], valueClass);
-				return JsonModel.builder().value(value).build();
-			}
-		} catch (Exception e) {
-			log.error("parse JsonModel to Object failed", e);
+		if (s != null) {
+			return new JsonModel(s);
 		}
-
 		return null;
 	}
 }

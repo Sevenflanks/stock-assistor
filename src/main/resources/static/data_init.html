@@ -202,13 +202,7 @@
     }
 
     function notifySyncComplete(time) {
-      if ("Notification" in window) {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted') {
-            new Notification(`已完成【${time}】資料同步`);
-          }
-        });
-      }
+      winNotify(`已完成【${time}】資料同步`);
     }
   });
 </script>

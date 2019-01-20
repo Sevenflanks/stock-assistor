@@ -37,6 +37,8 @@ public class SignalResultDaoTest {
         signalVo.setName("測試");
         signalVo.setShortName("測");
         final SignalResult signalResult = new SignalResult(
+                companyVo.getUid(),
+                1,
                 JsonModel.<CompanyVo>builder().value(companyVo).build(),
                 JsonListModel.<SignalVo>builder().value(Lists.newArrayList(signalVo)).build());
 

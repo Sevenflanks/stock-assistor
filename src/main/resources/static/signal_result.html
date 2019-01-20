@@ -7,8 +7,15 @@
     <link rel="stylesheet" href="resources/semantic/semantic.min.css">
     <link rel="stylesheet" href="resources/toastr/toastr.min.css">
     <link rel="stylesheet" href="resources/other/sa.css">
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    <style>
+        #main {
+            min-height: 400px
+        }
+    </style>
+
+    <script
+            src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
     <script src="https://momentjs.com/downloads/moment.min.js"></script>
     <script src="resources/semantic/semantic.min.js"></script>
@@ -20,25 +27,89 @@
 </head>
 <body>
 
-
 <div class="ui main container">
-    <div class="ui relaxed divided list">
-        <div class="item">
-            <i class="large hashtag middle aligned icon">4728</i>
-            <div class="content">
-                <a class="header">Semantic-Org/Semantic-UI</a>
-                <div class="description">Updated 10 mins ago</div>
-            </div>
-        </div>
+    <button class="ui primary button" id="runBtn">重跑訊號</button>
+</div>
+<div class="ui main container" id="main">
+    <div id="results">
+    </div>
+    <div id="resultEnd"></div>
+    <div class="ui dimmer">
+        <div class="ui massive text loader">Loading</div>
     </div>
 </div>
 
 </body>
 
 <script>
+  let itemTmp = `<div class="item">
+    <i class="large hashtag middle aligned icon">{{uid}}</i>
+    <div class="content">
+        <a class="header" href="{{link}}" target="_blank">{{name}}</a>
+        <div class="description"><div class="ui tag labels"></div></div>
+    </div>
+</div>`;
+
+  let labelTmp = `<a class="ui label">{{label}}</a>`;
+
   $(function () {
+    render();
 
+    $('#runBtn').on('click', e => {
+      $('#results').empty();
+      $('#main').dimmer('show');
+      fetch("/api/signal", {method: 'POST'}
+      ).then(response => response.json()
+      ).then(json => {
+        if (json.error) {
+          msg.error('操作中斷', json.message);
+          $('#main').dimmer('hide');
+        } else {
+          winNotify('重跑訊號完成');
+          render();
+        }
+      });
+    });
 
+    $(window).scroll(ifNeedLoadData);
+    let trigger = false;
+    function ifNeedLoadData() {
+      // 最後一頁即不再撈資料
+      if(trigger && $(window).scrollTop() + $(window).height() >= ($(document).height() - 100)) {
+        trigger = false;
+        render();
+      }
+    }
+
+    function render() {
+      // 取出目前最大的pageNo(用長度代替)
+      let pageNo = $('.page').length;
+
+      let eventSource = new EventSource(`/api/signal/result?page=${pageNo}`);
+      $('#main').dimmer('show');
+
+      let $page = $(`<div class="page ui relaxed divided list" id="${pageNo}"></div>`);
+      eventSource.onmessage = evt => {
+        $('#main').dimmer('hide');
+        let data = JSON.parse(evt.data);
+        let $item = $(itemTmp
+          .replace('{{uid}}', data.company.uid)
+          .replace('{{name}}', `(${data.company.stockType}) ${data.company.fullName}`)
+          .replace('{{link}}', `https://tw.stock.yahoo.com/q/bc?s=${data.company.uid}`));
+
+        let $labels = $item.find('.tag.labels');
+        data.matched.forEach(match => {
+          $labels.append($(labelTmp.replace('{{label}}', match.shortName)));
+        });
+
+        $('#results').append($page);
+        $page.append($item);
+      };
+      eventSource.onerror = evt => {
+        eventSource.close();
+        trigger = true;
+      }
+    }
 
   });
 </script>

@@ -50,7 +50,7 @@ public class Rule001 extends SignalRule<Rule001.Factor> {
 					final BigDecimal targetSharesTraded = target.getSharesTraded();
 
 					// target日 的成交量是否低於 近 b 個營業日平均值
-					final boolean result = targetSharesTraded.compareTo(avgSharesTraded) <= 0;
+					final boolean result = targetSharesTraded != null && avgSharesTraded != null && targetSharesTraded.compareTo(avgSharesTraded) <= 0;
 
 					log.debug("\tchecking {}.OTC result:{}, uid:{}, a.date:{}, a.target:{}, avg.in.{}:{}", this.code(), result, uid, date, targetSharesTraded, factor.b, avgSharesTraded);
 					return result;
@@ -69,7 +69,7 @@ public class Rule001 extends SignalRule<Rule001.Factor> {
 					final BigDecimal targetSharesTraded = target.getSharesTraded();
 
 					// target日 的成交量是否低於 近 b 個營業日平均值
-					final boolean result = targetSharesTraded.compareTo(avgSharesTraded) <= 0;
+					final boolean result = targetSharesTraded != null && avgSharesTraded != null && targetSharesTraded.compareTo(avgSharesTraded) <= 0;
 
 					log.debug("\tchecking {}.TWSE result:{}, uid:{}, a.date:{}, a.target:{}, avg.in.{}:{}", this.code(), result, uid, date, targetSharesTraded, factor.b, avgSharesTraded);
 					return result;

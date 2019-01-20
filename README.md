@@ -10,10 +10,10 @@
     6. <s>爬取上櫃股票融資餘額</s>`(done)`
     7. <s>WebUI-資料爬取控制</s>`(early release)`
     8. WebUI-資料視覺化 `pending`
-    9. WebUI-資料分析
-        - Sng001 `(testing)`
-        - Sng002 `(testing)`
-        - Sng003 `(testing)`
+    9. <s>WebUI-資料分析</s>`(done)`
+    10. WebUI-個人介面(註記, 隱藏, 分類)
+    11. WebUI-資料顯示優化(當日行情)
+    12. 訊號-Sng004(篩選價格)
 
 ## Env
 - 基本需求環境

@@ -2,10 +2,13 @@ package tw.org.sevenflanks.sa.signal.service;
 
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tw.org.sevenflanks.sa.base.data.JsonListModel;
 import tw.org.sevenflanks.sa.base.data.JsonModel;
 import tw.org.sevenflanks.sa.signal.dao.SignalDao;
+import tw.org.sevenflanks.sa.signal.dao.SignalResultDao;
 import tw.org.sevenflanks.sa.signal.entity.SignalResult;
 import tw.org.sevenflanks.sa.signal.model.SignalTask;
 import tw.org.sevenflanks.sa.signal.model.SignalVo;
@@ -16,6 +19,7 @@ import tw.org.sevenflanks.sa.stock.entity.OtcCompany;
 import tw.org.sevenflanks.sa.stock.entity.TwseCompany;
 import tw.org.sevenflanks.sa.stock.model.CompanyVo;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +32,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class SignalService {
 
 	@Autowired
@@ -39,6 +44,9 @@ public class SignalService {
 	@Autowired
 	private SignalDao signalDao;
 
+	@Autowired
+	private SignalResultDao signalResultDao;
+
 	private Map<String, SignalRule<?>> rules;
 
 	@Autowired
@@ -48,6 +56,17 @@ public class SignalService {
 		}));
 	}
 
+	/** 取得目前最新的結果(分頁) */
+	public List<SignalResult> get(Pageable pageable) {
+		return signalResultDao.findByLastSyncDate(pageable);
+	}
+
+	/** 取得目前最新的結果 */
+	public List<SignalResult> get() {
+		return signalResultDao.findByLastSyncDate();
+	}
+
+	/** 根據所有訊號設定跑出結果 */
 	public Collection<SignalResult> run() {
 		final List<OtcCompany> otcCompanies = otcCompanyDao.findByLastSyncDate();
 		final List<TwseCompany> twseCompanies = twseCompanyDao.findByLastSyncDate();
@@ -67,18 +86,32 @@ public class SignalService {
 				toResult(result, task);
 			}
 		} catch (Exception e) {
-			throw new RuntimeException();
+			throw new RuntimeException("generate to result failed", e);
 		}
 
 		return result.values();
 	}
 
+	public Collection<SignalResult> runAndSave() {
+		final Collection<SignalResult> results = this.run();
+
+		final LocalDate now = LocalDate.now();
+		results.forEach(result -> result.setSyncDate(now));
+		signalResultDao.deleteBySyncDate(now);
+		signalResultDao.saveAll(results);
+		return results;
+	}
+
 	private void toResult(HashMap<String, SignalResult> result, SignalTask task) throws ExecutionException, InterruptedException {
 		task.getFuture().get().forEach(c -> {
 			if (result.containsKey(c.getUid())) {
-				result.get(c.getUid()).getMatchs().get().add(new SignalVo(task.getSignal()));
+				final SignalResult signalResult = result.get(c.getUid());
+				signalResult.getMatchs().get().add(new SignalVo(task.getSignal()));
+				signalResult.setSize(signalResult.getMatchs().get().size());
 			} else {
 				result.put(c.getUid(), new SignalResult(
+						c.getUid(),
+						1,
 						JsonModel.<CompanyVo>builder().value(c).build(),
 						JsonListModel.<SignalVo>builder().value(Lists.newArrayList(new SignalVo(task.getSignal()))).build())
 				);

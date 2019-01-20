@@ -10,16 +10,22 @@ import tw.org.sevenflanks.sa.signal.model.SignalVo;
 import tw.org.sevenflanks.sa.stock.entity.SyncDateEntity;
 import tw.org.sevenflanks.sa.stock.model.CompanyVo;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Lob;
+import javax.persistence.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(indexes = {
+		@Index(name = "SIGNALRESULT_IDX1", columnList = "syncDate"),
+})
 public class SignalResult extends SyncDateEntity {
+
+	@Column
+	private String uid;
+	@Column
+	private Integer size;
 
 	@Column
 	@Lob

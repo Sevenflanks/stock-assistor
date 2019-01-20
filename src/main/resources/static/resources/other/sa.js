@@ -137,9 +137,13 @@ let msg = {
     };
     $.extend(toastr.options, settings); // 套用客製化設定
     if (messages && messages.length) {
-      toastr[type](messages.map(function (m) {
-        return '·' + m
-      }).join('<br>'), message);
+      if (messages instanceof Array) {
+        toastr[type](messages.map(function (m) {
+          return '·' + m
+        }).join('<br>'), message);
+      } else {
+        toastr[type](messages, message);
+      }
     } else {
       toastr[type](message);
     }
@@ -167,9 +171,13 @@ function showMsg(type, message, messages, settings) {
   };
   $.extend(toastr.options, settings); // 套用客製化設定
   if (messages && messages.length) {
-    toastr[type](messages.map(function (m) {
-      return '·' + m
-    }).join('<br>'), message);
+    if (messages instanceof Array) {
+      toastr[type](messages.map(function (m) {
+        return '·' + m
+      }).join('<br>'), message);
+    } else {
+      toastr[type](messages, message);
+    }
   } else {
     toastr[type](message);
   }
@@ -215,4 +223,14 @@ function showConfirm($target, message, messages, callback, onHidden) {
 /** 關閉MsgBox */
 function closeMsg($target) {
   $target.modal('hide');
+}
+
+function winNotify(msg) {
+  if ("Notification" in window) {
+    Notification.requestPermission().then(permission => {
+      if (permission === 'granted') {
+        new Notification(msg);
+      }
+    });
+  }
 }

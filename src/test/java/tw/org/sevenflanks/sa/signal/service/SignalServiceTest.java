@@ -18,7 +18,6 @@ import tw.org.sevenflanks.sa.signal.rule.Rule001;
 import tw.org.sevenflanks.sa.signal.rule.Rule002;
 import tw.org.sevenflanks.sa.signal.rule.Rule003;
 
-import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
@@ -47,25 +46,36 @@ public class SignalServiceTest {
 	@Autowired
 	private Rule003 rule003;
 
+
+	final Function<SignalResult, String> byUid = r -> r.getCompany().get().getUid();
+	final Function<SignalResult, Integer> bySize = r -> r.getMatchs().get().size();
+
+	@Test
+	@Transactional
+	@Rollback
+	public void get() {
+//		final List<SignalResult> results = signalService.get().stream()
+//				.sorted(Comparator.comparing(bySize, Comparator.reverseOrder()).thenComparing(byUid))
+//				.collect(Collectors.toList());
+
+		final List<SignalResult> results = signalService.get();
+
+		results.forEach(result -> {
+			System.out.println("符合" + result.getMatchs().get().size() + "項 " + result.getCompany().get() + ": " + result.getMatchs().get().stream().map(SignalVo::getShortName).sorted(Comparator.naturalOrder()).collect(Collectors.joining(",")));
+		});
+	}
+
 	@Test
 	@Transactional
 	@Rollback
 	public void run() {
-		final Function<SignalResult, String> byUid = r -> r.getCompany().get().getUid();
-		final Function<SignalResult, Integer> bySize = r -> r.getMatchs().get().size();
-
-		final List<SignalResult> results = signalService.run().stream()
+		final List<SignalResult> results = signalService.runAndSave().stream()
 				.sorted(Comparator.comparing(bySize, Comparator.reverseOrder()).thenComparing(byUid))
 				.collect(Collectors.toList());
 
 		results.forEach(result -> {
 					System.out.println("符合" + result.getMatchs().get().size() + "項 " + result.getCompany().get() + ": " + result.getMatchs().get().stream().map(SignalVo::getShortName).sorted(Comparator.naturalOrder()).collect(Collectors.joining(",")));
 				});
-
-		final LocalDate now = LocalDate.now();
-		results.forEach(result -> result.setSyncDate(now));
-		signalResultDao.deleteBySyncDate(now);
-		signalResultDao.saveAll(results);
 	}
 
 	@Test
