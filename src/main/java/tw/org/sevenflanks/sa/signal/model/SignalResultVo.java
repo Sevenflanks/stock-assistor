@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tw.org.sevenflanks.sa.signal.entity.SignalResult;
 import tw.org.sevenflanks.sa.stock.model.CompanyVo;
+import tw.org.sevenflanks.sa.stock.model.StockVo;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class SignalResultVo {
 
+    private StockVo stock;
     private CompanyVo company;
     private List<SignalVo> matched;
 

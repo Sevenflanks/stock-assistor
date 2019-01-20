@@ -25,7 +25,8 @@ public class SignalApi {
     @GetMapping("/result")
     public Flux<ServerSentEvent<SignalResultVo>> result(@RequestParam(defaultValue = "0") int page) {
         return WebFluxUtils.SSE(Flux.fromIterable(signalService.get(PageRequest.of(page, 50)))
-                .map(SignalResultVo::new));
+                .map(SignalResultVo::new)
+                .doOnNext(signalService::info));
     }
 
     @PostMapping

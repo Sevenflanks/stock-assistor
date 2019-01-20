@@ -43,7 +43,8 @@
 
 <script>
   let itemTmp = `<div class="item">
-    <i class="large hashtag middle aligned icon">{{uid}}</i>
+    <i class="big hashtag middle aligned icon">{{uid}}</i>
+    <i class="dollar sign icon">{{closingPrice}}</i>
     <div class="content">
         <a class="header" href="{{link}}" target="_blank">{{name}}</a>
         <div class="description"><div class="ui tag labels"></div></div>
@@ -94,6 +95,7 @@
         let data = JSON.parse(evt.data);
         let $item = $(itemTmp
           .replace('{{uid}}', data.company.uid)
+          .replace('{{closingPrice}}', data.stock.closingPrice)
           .replace('{{name}}', `(${data.company.stockType}) ${data.company.fullName}`)
           .replace('{{link}}', `https://tw.stock.yahoo.com/q/bc?s=${data.company.uid}`));
 

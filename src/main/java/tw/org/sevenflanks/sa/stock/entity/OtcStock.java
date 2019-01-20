@@ -1,17 +1,15 @@
 package tw.org.sevenflanks.sa.stock.entity;
 
-import java.math.BigDecimal;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
+import tw.org.sevenflanks.sa.stock.model.OtcStockDetailModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.Table;
-
-import org.springframework.beans.BeanUtils;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import tw.org.sevenflanks.sa.stock.model.OtcStockDetailModel;
+import java.math.BigDecimal;
 
 /** 上櫃股票行情 */
 @Getter
@@ -31,7 +29,7 @@ public class OtcStock extends SyncDateEntity {
 	private String fullName;
 
 	/** 收盤 */
-	private String closingPrice;
+	private BigDecimal closingPrice;
 
 	/** 漲跌 */
 	private String upsDowns;

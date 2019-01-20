@@ -10,14 +10,18 @@ import tw.org.sevenflanks.sa.base.data.JsonModel;
 import tw.org.sevenflanks.sa.signal.dao.SignalDao;
 import tw.org.sevenflanks.sa.signal.dao.SignalResultDao;
 import tw.org.sevenflanks.sa.signal.entity.SignalResult;
+import tw.org.sevenflanks.sa.signal.model.SignalResultVo;
 import tw.org.sevenflanks.sa.signal.model.SignalTask;
 import tw.org.sevenflanks.sa.signal.model.SignalVo;
 import tw.org.sevenflanks.sa.signal.rule.SignalRule;
 import tw.org.sevenflanks.sa.stock.dao.OtcCompanyDao;
+import tw.org.sevenflanks.sa.stock.dao.OtcStockDao;
 import tw.org.sevenflanks.sa.stock.dao.TwseCompanyDao;
+import tw.org.sevenflanks.sa.stock.dao.TwseStockDao;
 import tw.org.sevenflanks.sa.stock.entity.OtcCompany;
 import tw.org.sevenflanks.sa.stock.entity.TwseCompany;
 import tw.org.sevenflanks.sa.stock.model.CompanyVo;
+import tw.org.sevenflanks.sa.stock.model.StockVo;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -42,6 +46,12 @@ public class SignalService {
 	private TwseCompanyDao twseCompanyDao;
 
 	@Autowired
+	private OtcStockDao otcStockDao;
+
+	@Autowired
+	private TwseStockDao twseStockDao;
+
+	@Autowired
 	private SignalDao signalDao;
 
 	@Autowired
@@ -64,6 +74,37 @@ public class SignalService {
 	/** 取得目前最新的結果 */
 	public List<SignalResult> get() {
 		return signalResultDao.findByLastSyncDate();
+	}
+
+	/** 補充資訊 */
+	public void info(SignalResultVo signalResultVo) {
+		final CompanyVo company = signalResultVo.getCompany();
+		final LocalDate now = LocalDate.now();
+		if (CompanyVo.TYPE_OTC.equals(company.getStockType())) {
+			otcStockDao.findRecordDates(company.getUid(), now, 1).stream()
+					.findFirst()
+					.map(date -> otcStockDao.findByUidAndSyncDate(company.getUid(), date))
+					.ifPresent(stock -> signalResultVo.setStock(StockVo.builder()
+							.openingPrice(stock.getOpeningPrice())
+							.closingPrice(stock.getClosingPrice())
+							.upsDowns(stock.getUpsDowns())
+							.highestPrice(stock.getHighestPrice())
+							.lowestPrice(stock.getLowestPrice())
+							.build()));
+
+		} else if (CompanyVo.TYPE_TWSE.equals(company.getStockType())) {
+			twseStockDao.findRecordDates(company.getUid(), now, 1).stream()
+					.findFirst()
+					.map(date -> twseStockDao.findByUidAndSyncDate(company.getUid(), date))
+					.ifPresent(stock -> signalResultVo.setStock(StockVo.builder()
+							.openingPrice(stock.getOpeningPrice())
+							.closingPrice(stock.getClosingPrice())
+							.upsDowns(stock.getUpsDowns())
+							.highestPrice(stock.getHighestPrice())
+							.lowestPrice(stock.getLowestPrice())
+							.build()));
+
+		}
 	}
 
 	/** 根據所有訊號設定跑出結果 */

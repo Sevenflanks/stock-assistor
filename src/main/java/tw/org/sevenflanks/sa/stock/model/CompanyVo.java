@@ -13,6 +13,9 @@ import tw.org.sevenflanks.sa.stock.entity.TwseCompany;
 @EqualsAndHashCode(of = "uid")
 public class CompanyVo {
 
+	public static final String TYPE_OTC = "上櫃";
+	public static final String TYPE_TWSE = "上市";
+
 	/** 公司代號 */
 	private String uid;
 
@@ -25,13 +28,13 @@ public class CompanyVo {
 	public CompanyVo(OtcCompany otcCompany) {
 		this.uid = otcCompany.getUid();
 		this.fullName = otcCompany.getFullName();
-		this.stockType = "上櫃";
+		this.stockType = TYPE_OTC;
 	}
 
 	public CompanyVo(TwseCompany twseCompany) {
 		this.uid = twseCompany.getUid();
 		this.fullName = twseCompany.getFullName();
-		this.stockType = "上市";
+		this.stockType = TYPE_TWSE;
 	}
 
 
