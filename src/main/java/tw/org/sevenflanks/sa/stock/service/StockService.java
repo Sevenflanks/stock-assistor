@@ -50,8 +50,8 @@ public class StockService {
 		otcStockSyncService.sync(date, true);
 		otcRgremainSyncService.sync(date, true);
 
-		twseCompanySyncService.sync(date, true);
-		otcCompanySyncService.sync(date, true);
+		twseCompanySyncService.syncOnlyLatest(date, true);
+		otcCompanySyncService.syncOnlyLatest(date, true);
 
 		return checkDataStoreType(date);
 	}
@@ -62,8 +62,8 @@ public class StockService {
 		otcStockSyncService.sync(date, false);
 		otcRgremainSyncService.sync(date, false);
 
-		twseCompanySyncService.sync(date, false);
-		otcCompanySyncService.sync(date, false);
+		twseCompanySyncService.syncOnlyLatest(date, false);
+		otcCompanySyncService.syncOnlyLatest(date, false);
 
 		return checkDataStoreType(date);
 	}
