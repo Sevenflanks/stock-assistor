@@ -1,27 +1,22 @@
 package tw.org.sevenflanks.sa.stock.picker;
 
-import java.net.InetSocketAddress;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.google.common.collect.Lists;
-
-import lombok.extern.slf4j.Slf4j;
 import tw.org.sevenflanks.sa.base.msg.enums.MsgTemplate;
+import tw.org.sevenflanks.sa.base.utils.WebFluxUtils;
 import tw.org.sevenflanks.sa.stock.model.TwseDailyModel;
 import tw.org.sevenflanks.sa.stock.model.TwseExchangeModel;
+
+import java.net.InetSocketAddress;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Component
@@ -34,11 +29,11 @@ public class TwseDataPicker {
 	public TwseDailyModel getStockDay(LocalDate date) {
 
 		// 建立request
-		final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.twse.com.tw/exchangeReport/MI_INDEX")
+		final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://www.twse.com.tw/exchangeReport/MI_INDEX")
 				.queryParam("response", "json")
 				.queryParam("date", date.format(API_DATE))
 				.queryParam("type", "ALL");
-		final RestTemplate restTemplate = new RestTemplate();
+		final RestTemplate restTemplate = new RestTemplate(WebFluxUtils.SSL());
 		final HttpHeaders headers = new HttpHeaders();
 		final HttpEntity<?> request = new HttpEntity<>(headers);
 		final String url = builder.toUriString();
@@ -58,7 +53,7 @@ public class TwseDataPicker {
 		final String paramResponse = "json";
 		final String paramDate = date.format(API_DATE);
 		final String paramMilli = Long.toString(milli);
-		final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.twse.com.tw/exchangeReport/TWT93U")
+		final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://www.twse.com.tw/exchangeReport/TWT93U")
 				.queryParam("response", paramResponse)
 				.queryParam("date", paramDate)
 				.queryParam("_", paramMilli);
@@ -67,7 +62,7 @@ public class TwseDataPicker {
 	}
 
 	private TwseExchangeModel httpGetBody(UriComponentsBuilder builder) {
-		final RestTemplate restTemplate = new RestTemplate();
+		final RestTemplate restTemplate = new RestTemplate(WebFluxUtils.SSL());
 		final HttpHeaders headers = new HttpHeaders();
 		final HttpEntity<?> request = new HttpEntity<>(headers);
 		headers.setAccept(Lists.newArrayList(MediaType.APPLICATION_JSON_UTF8, MediaType.APPLICATION_JSON));

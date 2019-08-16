@@ -1,11 +1,8 @@
 package tw.org.sevenflanks.sa.stock.picker;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.stream.Stream;
-
+import com.opencsv.bean.ColumnPositionMappingStrategy;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -13,14 +10,16 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.opencsv.bean.ColumnPositionMappingStrategy;
-import com.opencsv.bean.CsvToBean;
-import com.opencsv.bean.CsvToBeanBuilder;
-
 import tw.org.sevenflanks.sa.base.msg.enums.MsgTemplate;
 import tw.org.sevenflanks.sa.base.msg.exception.MsgException;
+import tw.org.sevenflanks.sa.base.utils.WebFluxUtils;
 import tw.org.sevenflanks.sa.stock.model.TwseCompanyModel;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.stream.Stream;
 
 public interface AbstractCompanyPicker<T> {
 
@@ -31,7 +30,7 @@ public interface AbstractCompanyPicker<T> {
 		try {
 			// 建立request
 			final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(apiUrl);
-			final RestTemplate restTemplate = new RestTemplate();
+			final RestTemplate restTemplate = new RestTemplate(WebFluxUtils.SSL());
 			final HttpHeaders headers = new HttpHeaders();
 			final HttpEntity<?> request = new HttpEntity<>(headers);
 			final String url = builder.toUriString();

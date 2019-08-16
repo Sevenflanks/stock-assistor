@@ -1,14 +1,13 @@
 package tw.org.sevenflanks.sa.stock.picker;
 
-import java.time.LocalDate;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-
 import tw.org.sevenflanks.sa.stock.model.TwseExchangeModel;
+
+import java.time.LocalDate;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -19,13 +18,13 @@ public class TwseDataPickerTest {
 
 	@Test
 	public void test() {
-//		final TwseDailyModel stockDay = twseDataPicker.getStockDay(LocalDate.of(2018, 11, 23));
+//		final TwseDailyModel stockDay = twseDataPicker.getStockDay(LocalDate.of(2019, 1, 30));
 //
-//		stockDay.getFields5().forEach(f -> System.out.print(f + " "));
+//		stockDay.getFields9().forEach(f -> System.out.print(f + " "));
 //		System.out.println();
 //		System.out.println();
 //
-//		stockDay.getData5().forEach(System.out::println);
+//		stockDay.getData9().forEach(System.out::println);
 
 
 		final TwseExchangeModel rgremain = twseDataPicker.getRgremain(LocalDate.of(2018, 11, 23));

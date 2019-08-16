@@ -1,6 +1,7 @@
 package tw.org.sevenflanks.sa.stock.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tw.org.sevenflanks.sa.stock.dao.OtcCompanyDao;
@@ -25,9 +26,16 @@ public class OtcCompanySyncService implements GenericSyncService<OtcCompany, Otc
 	@Autowired
 	private OtcCompanyPicker otcCompanyPicker;
 
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
 	@Override
 	public OtcCompanyDao dao() {
 		return otcCompanyDao;
+	}
+
+	@Override
+	public void batchSave(List<OtcCompany> datas) {
 	}
 
 	@Override

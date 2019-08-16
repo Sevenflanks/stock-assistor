@@ -1,20 +1,20 @@
 package tw.org.sevenflanks.sa.stock.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tw.org.sevenflanks.sa.stock.dao.TwseRgremainDao;
+import tw.org.sevenflanks.sa.stock.entity.TwseRgremain;
+import tw.org.sevenflanks.sa.stock.model.TwseExchangeModel;
+import tw.org.sevenflanks.sa.stock.picker.TwseDataPicker;
+
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import tw.org.sevenflanks.sa.stock.dao.TwseRgremainDao;
-import tw.org.sevenflanks.sa.stock.entity.TwseRgremain;
-import tw.org.sevenflanks.sa.stock.model.TwseExchangeModel;
-import tw.org.sevenflanks.sa.stock.picker.TwseDataPicker;
 
 @Service
 @Transactional
@@ -26,9 +26,16 @@ public class TwseRgremainSyncService implements GenericSyncService<TwseRgremain,
 	@Autowired
 	private TwseDataPicker twseDataPicker;
 
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
 	@Override
 	public TwseRgremainDao dao() {
 		return twseStockDao;
+	}
+
+	@Override
+	public void batchSave(List<TwseRgremain> datas) {
 	}
 
 	@Override

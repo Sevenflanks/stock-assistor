@@ -1,20 +1,20 @@
 package tw.org.sevenflanks.sa.stock.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tw.org.sevenflanks.sa.stock.dao.TwseStockDao;
+import tw.org.sevenflanks.sa.stock.entity.TwseStock;
+import tw.org.sevenflanks.sa.stock.model.TwseDailyModel;
+import tw.org.sevenflanks.sa.stock.picker.TwseDataPicker;
+
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import tw.org.sevenflanks.sa.stock.dao.TwseStockDao;
-import tw.org.sevenflanks.sa.stock.entity.TwseStock;
-import tw.org.sevenflanks.sa.stock.model.TwseDailyModel;
-import tw.org.sevenflanks.sa.stock.picker.TwseDataPicker;
 
 @Service
 @Transactional
@@ -26,9 +26,16 @@ public class TwseStockSyncService implements GenericSyncService<TwseStock, TwseS
 	@Autowired
 	private TwseDataPicker twseDataPicker;
 
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
 	@Override
 	public TwseStockDao dao() {
 		return twseStockDao;
+	}
+
+	@Override
+	public void batchSave(List<TwseStock> datas) {
 	}
 
 	@Override
@@ -39,7 +46,7 @@ public class TwseStockSyncService implements GenericSyncService<TwseStock, TwseS
 	@Override
 	public List<TwseStock> fetch(LocalDate date) {
 		return Optional.ofNullable(twseDataPicker.getStockDay(date))
-				.map(TwseDailyModel::getData5)
+				.map(TwseDailyModel::getData9)
 				.map(Collection::stream)
 				.orElseGet(Stream::empty)
 				.map(TwseStock::new)

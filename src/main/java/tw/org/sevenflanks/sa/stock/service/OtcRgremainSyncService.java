@@ -1,20 +1,20 @@
 package tw.org.sevenflanks.sa.stock.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tw.org.sevenflanks.sa.stock.dao.OtcRgremainDao;
+import tw.org.sevenflanks.sa.stock.entity.OtcRgremain;
+import tw.org.sevenflanks.sa.stock.model.OtcExchangeModel;
+import tw.org.sevenflanks.sa.stock.picker.OtcRgremainPicker;
+
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import tw.org.sevenflanks.sa.stock.dao.OtcRgremainDao;
-import tw.org.sevenflanks.sa.stock.entity.OtcRgremain;
-import tw.org.sevenflanks.sa.stock.model.OtcExchangeModel;
-import tw.org.sevenflanks.sa.stock.picker.OtcRgremainPicker;
 
 @Service
 @Transactional
@@ -26,9 +26,16 @@ public class OtcRgremainSyncService implements GenericSyncService<OtcRgremain, O
 	@Autowired
 	private OtcRgremainPicker otcRgremainPicker;
 
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
 	@Override
 	public OtcRgremainDao dao() {
 		return otcStockDao;
+	}
+
+	@Override
+	public void batchSave(List<OtcRgremain> datas) {
 	}
 
 	@Override

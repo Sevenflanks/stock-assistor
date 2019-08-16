@@ -1,11 +1,11 @@
 package tw.org.sevenflanks.sa.stock.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-
-import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 @Setter
@@ -25,7 +25,7 @@ public class TwseDailyDetailModel extends ArrayList<String> {
 			} else if (field.getType().isAssignableFrom(BigDecimal.class)) {
 				field.set(this, new BigDecimal(s.replaceAll(",", "")));
 			}
-		} catch (IllegalAccessException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		return super.add(s);

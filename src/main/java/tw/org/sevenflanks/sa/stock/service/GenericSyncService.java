@@ -15,7 +15,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +25,8 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 	Logger log = LoggerFactory.getLogger(GenericSyncService.class);
 
 	DAO dao();
+
+	void batchSave(List<T> datas);
 
 	Class<T> entityClass();
 
@@ -57,15 +61,18 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 
 	default void sync(LocalDate date, boolean fetchFromApi) throws IOException {
 		// 先從檔案資料讀取，沒有的話再從Api撈
+		final LocalDateTime fetchFileStartTime = LocalDateTime.now();
 		final Optional<List<T>> fileData = this.loadFromFile(date);
 		final Optional<List<T>> dataOp;
 		if (fileData.isPresent()) {
 			dataOp = fileData;
-			log.info("[{}@{}] fetched dataOp success", this.zhName(), date);
+			log.info("[{}@{}] fetched from file success, in {}s", this.zhName(), date, ChronoUnit.SECONDS.between(fetchFileStartTime, LocalDateTime.now()));
 		} else if (fetchFromApi) {
+			final LocalDateTime fetchApiStartTime = LocalDateTime.now();
 			dataOp = Optional.of(this.fetch(date)).filter(d -> !d.isEmpty());
 			dataOp.ifPresent(Unchecked.consumer(data -> this.saveToFile(date, data)));
 			dataOp.orElseThrow(() -> new MsgException(MsgTemplate.RMAPI02.build("本日無資料 {0}:{1}", this.zhName(), date)));
+			log.info("[{}@{}] fetched from api success, in {}s", this.zhName(), date, ChronoUnit.SECONDS.between(fetchApiStartTime, LocalDateTime.now()));
 		} else {
 			dataOp = Optional.empty();
 		}
@@ -77,6 +84,7 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 
 	/** 儲存到檔案 */
 	default void saveToFile(LocalDate date, List<T> datas) throws IOException {
+		final LocalDateTime saveFileStartTime = LocalDateTime.now();
 		final Path path = Paths.get("data").resolve(YearMonth.from(date).toString()).resolve(date.toString());
 		log.debug("[{}@{}] saving to file, {}", this.zhName(), date, path);
 
@@ -94,7 +102,7 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 		}
 
 		GlobalConstants.WEB_OBJECT_MAPPER.writeValue(saveTo.toFile(), datas);
-		log.info("[{}@{}] saved to file success, {}", this.zhName(), date, saveTo);
+		log.info("[{}@{}] saved to file success, in {}s, {}", this.zhName(), date, saveTo, ChronoUnit.SECONDS.between(saveFileStartTime, LocalDateTime.now()));
 	}
 
 	/**
@@ -117,12 +125,16 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 	}
 
 	/** 儲存到 db */
-	default List<T> saveToDb(LocalDate date, List<T> datas) {
-		log.info("[{}@{}] saving to db", this.zhName(), date);
+	default void saveToDb(LocalDate date, List<T> datas) {
+		final LocalDateTime saveDbStartTime = LocalDateTime.now();
+
+		log.debug("[{}@{}] saving to db", this.zhName(), date);
 		datas.forEach(e -> e.setSyncDate(date));
 		// 根據日期全刪全增
 		dao().deleteBySyncDate(date);
-		return dao().saveAll(datas);
+		final List<T> saveds = dao().saveAll(datas);
+
+		log.info("[{}@{}] saved to db, in {}s", this.zhName(), date, ChronoUnit.SECONDS.between(saveDbStartTime, LocalDateTime.now()));
 	}
 
 }

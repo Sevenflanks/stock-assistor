@@ -1,20 +1,20 @@
 package tw.org.sevenflanks.sa.stock.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tw.org.sevenflanks.sa.stock.dao.OtcStockDao;
+import tw.org.sevenflanks.sa.stock.entity.OtcStock;
+import tw.org.sevenflanks.sa.stock.model.OtcStockModel;
+import tw.org.sevenflanks.sa.stock.picker.OtcStockPicker;
+
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import tw.org.sevenflanks.sa.stock.dao.OtcStockDao;
-import tw.org.sevenflanks.sa.stock.entity.OtcStock;
-import tw.org.sevenflanks.sa.stock.model.OtcStockModel;
-import tw.org.sevenflanks.sa.stock.picker.OtcStockPicker;
 
 @Service
 @Transactional
@@ -26,9 +26,16 @@ public class OtcStockSyncService implements GenericSyncService<OtcStock, OtcStoc
 	@Autowired
 	private OtcStockPicker otcStockPicker;
 
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
 	@Override
 	public OtcStockDao dao() {
 		return otcStockDao;
+	}
+
+	@Override
+	public void batchSave(List<OtcStock> datas) {
 	}
 
 	@Override
