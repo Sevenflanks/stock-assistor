@@ -14,10 +14,12 @@ import tw.org.sevenflanks.sa.signal.dao.SignalResultDao;
 import tw.org.sevenflanks.sa.signal.entity.Signal;
 import tw.org.sevenflanks.sa.signal.entity.SignalResult;
 import tw.org.sevenflanks.sa.signal.model.SignalVo;
+import tw.org.sevenflanks.sa.signal.rule.Rule000;
 import tw.org.sevenflanks.sa.signal.rule.Rule001;
 import tw.org.sevenflanks.sa.signal.rule.Rule002;
 import tw.org.sevenflanks.sa.signal.rule.Rule003;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -37,6 +39,9 @@ public class SignalServiceTest {
 
 	@Autowired
 	private SignalService signalService;
+
+	@Autowired
+	private Rule000 rule000;
 
 	@Autowired
 	private Rule001 rule001;
@@ -80,10 +85,10 @@ public class SignalServiceTest {
 	}
 
 	@Test
-	@Transactional
 	@Commit
 	public void init() {
 		signalDao.deleteAll();
+		signalDao.save(new Signal("R000SNG01", "當日有收盤價格", "有收盤價", rule000, Rule000.Factor.builder().min(BigDecimal.ZERO).build()));
 		signalDao.save(new Signal("R001SNG01", "成交量連續 5 個營業日低於近 5 個營業日平均值", "成交量5/5", rule001, Rule001.Factor.builder().a(5).b(5).build()));
 		signalDao.save(new Signal("R001SNG02", "成交量連續 5 個營業日低於近 20 個營業日平均值", "成交量5/20", rule001, Rule001.Factor.builder().a(5).b(20).build()));
 		signalDao.save(new Signal("R002SNG01", "融券餘額連續 5 個營業日低於近 5 個營業日平均值", "融券餘5/5", rule002, Rule002.Factor.builder().a(5).b(5).build()));

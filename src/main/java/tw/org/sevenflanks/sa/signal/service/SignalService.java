@@ -116,7 +116,7 @@ public class SignalService {
 
 		final SignalTask[] tasks = signalDao.findAll().stream()
 				.map(signal -> {
-					final SignalRule<?> rule = rules.get(signal.getRuleCode());
+ 					final SignalRule<?> rule = rules.get(signal.getRuleCode());
 					final CompletableFuture<List<CompanyVo>> future = CompletableFuture.supplyAsync(() -> rule.getMatch(baseDate, signal.readFactor(), otcCompanies, twseCompanies), executor);
 					return new SignalTask(signal, future);
 				})

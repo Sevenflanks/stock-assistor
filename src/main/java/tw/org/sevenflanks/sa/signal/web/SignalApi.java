@@ -3,6 +3,7 @@ package tw.org.sevenflanks.sa.signal.web;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class SignalApi {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate baseDate,
             @RequestParam(defaultValue = "0") int page) {
         final LocalDate date = Optional.ofNullable(baseDate).orElseGet(LocalDate::now);
-        return Flux.fromIterable(signalService.get(date, PageRequest.of(page, 50)))
+        return Flux.fromIterable(signalService.get(date, PageRequest.of(page, 50, Sort.by(Sort.Direction.DESC, "size"))))
                 .map(SignalResultVo::new)
                 .doOnNext(signalService::info);
     }

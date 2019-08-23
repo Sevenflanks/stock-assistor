@@ -66,13 +66,13 @@
     $('#runBtn').on('click', e => {
       $('#results').empty();
       $('#main').dimmer('show');
-      let baseDate = $('#baseDate').val();
+      let baseDate = getBaseDate();
       let queryString = baseDate ? '?baseDate=' + baseDate : '';
       fetch("/api/signal" + queryString, {method: 'POST'}
       ).then(response => response.json()
       ).catch(reason => msg.error("重跑失敗", reason)
       ).then(json => {
-        if (json.error) {
+        if (json && json.error) {
           msg.error('操作中斷', json.message);
           $('#main').dimmer('hide');
         } else {
@@ -96,7 +96,7 @@
       // 取出目前最大的pageNo(用長度代替)
       let pageNo = $('.page').length;
 
-      let baseDate = $('#baseDate').val();
+      let baseDate = getBaseDate();
       let baseDateQueryString = baseDate ? '&baseDate=' + baseDate : '';
       let eventSource = new EventSource(`/api/signal/result?page=${pageNo}${baseDateQueryString}`);
       $('#main').dimmer('show');
@@ -124,6 +124,17 @@
         $('#main').dimmer('hide');
         eventSource.close();
         trigger = true;
+      }
+    }
+
+    function getBaseDate() {
+      let val = $('#baseDate').val();
+      if (val) {
+        return val;
+      } else {
+        let today = moment().format('YYYY-MM-DD');
+        $('#baseDate').val(today);
+        return today
       }
     }
 

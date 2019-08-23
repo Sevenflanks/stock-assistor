@@ -24,11 +24,15 @@ public class JobQueue {
             jobs.add(jobId);
         }
 
-        final Future<T> future = executor.submit(callable);
-        final T result = future.get();
+        final T result;
+        try {
+            final Future<T> future = executor.submit(callable);
+            result = future.get();
 
-        synchronized (jobs) {
-            jobs.remove(jobId);
+        } finally {
+            synchronized (jobs) {
+                jobs.remove(jobId);
+            }
         }
 
         return result;
