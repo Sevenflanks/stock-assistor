@@ -14,6 +14,7 @@ import tw.org.sevenflanks.sa.stock.entity.OtcCompany;
 import tw.org.sevenflanks.sa.stock.entity.TwseCompany;
 import tw.org.sevenflanks.sa.stock.model.CompanyVo;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -48,12 +49,12 @@ public class CompositeTest {
 		final List<OtcCompany> otcCompanies = otcCompanyDao.findByLastSyncDate();
 		final List<TwseCompany> twseCompanies = twseCompanyDao.findByLastSyncDate();
 
-		final ForkJoinTask<List<CompanyVo>> task1 = ForkJoinPool.commonPool().submit(() -> rule001.getMatch(Rule001.Factor.builder().a(5).b(5).build(), otcCompanies, twseCompanies));
-		final ForkJoinTask<List<CompanyVo>> task2 = ForkJoinPool.commonPool().submit(() -> rule001.getMatch(Rule001.Factor.builder().a(5).b(20).build(), otcCompanies, twseCompanies));
-		final ForkJoinTask<List<CompanyVo>> task3 = ForkJoinPool.commonPool().submit(() -> rule002.getMatch(Rule002.Factor.builder().a(5).b(5).build(), otcCompanies, twseCompanies));
-		final ForkJoinTask<List<CompanyVo>> task4 = ForkJoinPool.commonPool().submit(() -> rule002.getMatch(Rule002.Factor.builder().a(5).b(20).build(), otcCompanies, twseCompanies));
-		final ForkJoinTask<List<CompanyVo>> task5 = ForkJoinPool.commonPool().submit(() -> rule003.getMatch(Rule003.Factor.builder().a(5).b(5).build(), otcCompanies, twseCompanies));
-		final ForkJoinTask<List<CompanyVo>> task6 = ForkJoinPool.commonPool().submit(() -> rule003.getMatch(Rule003.Factor.builder().a(5).b(20).build(), otcCompanies, twseCompanies));
+		final ForkJoinTask<List<CompanyVo>> task1 = ForkJoinPool.commonPool().submit(() -> rule001.getMatch(LocalDate.now(), Rule001.Factor.builder().a(5).b(5).build(), otcCompanies, twseCompanies));
+		final ForkJoinTask<List<CompanyVo>> task2 = ForkJoinPool.commonPool().submit(() -> rule001.getMatch(LocalDate.now(), Rule001.Factor.builder().a(5).b(20).build(), otcCompanies, twseCompanies));
+		final ForkJoinTask<List<CompanyVo>> task3 = ForkJoinPool.commonPool().submit(() -> rule002.getMatch(LocalDate.now(), Rule002.Factor.builder().a(5).b(5).build(), otcCompanies, twseCompanies));
+		final ForkJoinTask<List<CompanyVo>> task4 = ForkJoinPool.commonPool().submit(() -> rule002.getMatch(LocalDate.now(), Rule002.Factor.builder().a(5).b(20).build(), otcCompanies, twseCompanies));
+		final ForkJoinTask<List<CompanyVo>> task5 = ForkJoinPool.commonPool().submit(() -> rule003.getMatch(LocalDate.now(), Rule003.Factor.builder().a(5).b(5).build(), otcCompanies, twseCompanies));
+		final ForkJoinTask<List<CompanyVo>> task6 = ForkJoinPool.commonPool().submit(() -> rule003.getMatch(LocalDate.now(), Rule003.Factor.builder().a(5).b(20).build(), otcCompanies, twseCompanies));
 
 		final List<CompanyVo> matchSng001_1 = task1.get();
 		final List<CompanyVo> matchSng001_2 = task2.get();

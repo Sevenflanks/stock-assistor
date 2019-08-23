@@ -102,7 +102,7 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 		}
 
 		GlobalConstants.WEB_OBJECT_MAPPER.writeValue(saveTo.toFile(), datas);
-		log.info("[{}@{}] saved to file success, in {}s, {}", this.zhName(), date, saveTo, ChronoUnit.SECONDS.between(saveFileStartTime, LocalDateTime.now()));
+		log.info("[{}@{}] saved to file success, in {}s, {}", this.zhName(), date, ChronoUnit.SECONDS.between(saveFileStartTime, LocalDateTime.now()), saveTo);
 	}
 
 	/**

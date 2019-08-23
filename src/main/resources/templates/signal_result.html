@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>股助-訊號</title>
 
-    <link rel="stylesheet" href="resources/semantic/semantic.min.css">
-    <link rel="stylesheet" href="resources/toastr/toastr.min.css">
-    <link rel="stylesheet" href="resources/other/sa.css">
+    <link rel="stylesheet" th:href="@{/resources/semantic/semantic.min.css}">
+    <link rel="stylesheet" th:href="@{/resources/toastr/toastr.min.css}">
+    <link rel="stylesheet" th:href="@{/resources/other/sa.css}">
     <style>
         #main {
             min-height: 400px
@@ -18,17 +18,19 @@
             integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
             crossorigin="anonymous"></script>
     <script src="https://momentjs.com/downloads/moment.min.js"></script>
-    <script src="resources/semantic/semantic.min.js"></script>
-    <script src="resources/other/sseUtils.js"></script>
-    <script src="resources/form2js/form2js.js"></script>
-    <script src="resources/form2js/jquery.toObject.js"></script>
-    <script src="resources/toastr/toastr.min.js"></script>
-    <script src="resources/other/sa.js"></script>
+    <script th:src="@{/resources/semantic/semantic.min.js}"></script>
+    <script th:src="@{/resources/other/sseUtils.js}"></script>
+    <script th:src="@{/resources/form2js/form2js.js}"></script>
+    <script th:src="@{/resources/form2js/jquery.toObject.js}"></script>
+    <script th:src="@{/resources/toastr/toastr.min.js}"></script>
+    <script th:src="@{/resources/other/sa.js}"></script>
 </head>
 <body>
 
 <div class="ui main container">
+    <input id="baseDate" type="date" placeholder="基準日">
     <button class="ui primary button" id="runBtn">重跑訊號</button>
+    <button class="ui secondary button" id="queryBtn">重新查詢</button>
 </div>
 <div class="ui main container" id="main">
     <div id="results">
@@ -41,7 +43,7 @@
 
 </body>
 
-<script>
+<script type="application/javascript">
   let itemTmp = `<div class="item">
     <i class="big hashtag middle aligned icon">{{uid}}</i>
     <i class="dollar sign icon">{{closingPrice}}</i>
@@ -49,6 +51,7 @@
         <a class="header" href="{{link}}" target="_blank">{{name}}</a>
         <div class="description"><div class="ui tag labels"></div></div>
     </div>
+    <i class="calendar check icon">{{syncDate}}</i>
 </div>`;
 
   let labelTmp = `<a class="ui label">{{label}}</a>`;
@@ -56,11 +59,18 @@
   $(function () {
     render();
 
+    $('#queryBtn').on('click', e => {
+      render();
+    });
+
     $('#runBtn').on('click', e => {
       $('#results').empty();
       $('#main').dimmer('show');
-      fetch("/api/signal", {method: 'POST'}
+      let baseDate = $('#baseDate').val();
+      let queryString = baseDate ? '?baseDate=' + baseDate : '';
+      fetch("/api/signal" + queryString, {method: 'POST'}
       ).then(response => response.json()
+      ).catch(reason => msg.error("重跑失敗", reason)
       ).then(json => {
         if (json.error) {
           msg.error('操作中斷', json.message);
@@ -86,7 +96,9 @@
       // 取出目前最大的pageNo(用長度代替)
       let pageNo = $('.page').length;
 
-      let eventSource = new EventSource(`/api/signal/result?page=${pageNo}`);
+      let baseDate = $('#baseDate').val();
+      let baseDateQueryString = baseDate ? '&baseDate=' + baseDate : '';
+      let eventSource = new EventSource(`/api/signal/result?page=${pageNo}${baseDateQueryString}`);
       $('#main').dimmer('show');
 
       let $page = $(`<div class="page ui relaxed divided list" id="${pageNo}"></div>`);
@@ -96,6 +108,7 @@
         let $item = $(itemTmp
           .replace('{{uid}}', data.company.uid)
           .replace('{{closingPrice}}', data.stock.closingPrice)
+          .replace('{{syncDate}}', data.syncDate)
           .replace('{{name}}', `(${data.company.stockType}) ${data.company.fullName}`)
           .replace('{{link}}', `https://tw.stock.yahoo.com/q/bc?s=${data.company.uid}`));
 
@@ -108,6 +121,7 @@
         $page.append($item);
       };
       eventSource.onerror = evt => {
+        $('#main').dimmer('hide');
         eventSource.close();
         trigger = true;
       }

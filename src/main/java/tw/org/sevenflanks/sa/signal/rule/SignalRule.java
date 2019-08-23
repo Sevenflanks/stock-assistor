@@ -18,17 +18,16 @@ public abstract class SignalRule<FACTOR extends SignalRule.Factor> {
 	}
 
 
-	public List<CompanyVo> getMatch(FACTOR factor, List<OtcCompany> otcCompanies, List<TwseCompany> twseCompanies) {
-		final LocalDate now = LocalDate.now();
-		log.info("checking {} {}, base:{}", this.code(), factor, now);
+	public List<CompanyVo> getMatch(LocalDate baseDate, FACTOR factor, List<OtcCompany> otcCompanies, List<TwseCompany> twseCompanies) {
+		log.info("checking {} {}, base:{}", this.code(), factor, baseDate);
 
 		return Stream.concat(
 				otcCompanies.stream()
 						.peek(company -> {})
-						.filter(company -> isOtcMatch(company.getUid(), now, factor))
+						.filter(company -> isOtcMatch(company.getUid(), baseDate, factor))
 						.map(CompanyVo::new),
 				twseCompanies.stream()
-						.filter(company -> isTwseMatch(company.getUid(), now, factor))
+						.filter(company -> isTwseMatch(company.getUid(), baseDate, factor))
 						.map(CompanyVo::new)
 
 		).collect(Collectors.toList());

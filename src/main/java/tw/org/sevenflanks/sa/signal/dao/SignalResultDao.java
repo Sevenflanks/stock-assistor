@@ -22,4 +22,6 @@ public interface SignalResultDao extends GenericDao<SignalResult> {
 
     @Query(value = "SELECT c FROM SignalResult c WHERE c.syncDate = (SELECT MAX(sc.syncDate) FROM SignalResult sc) ORDER BY c.size desc, c.uid")
     List<SignalResult> findByLastSyncDate(Pageable pageable);
+
+    List<SignalResult> findBySyncDate(LocalDate syncDate,Pageable pageable);
 }

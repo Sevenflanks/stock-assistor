@@ -67,8 +67,8 @@ public class SignalService {
 	}
 
 	/** 取得目前最新的結果(分頁) */
-	public List<SignalResult> get(Pageable pageable) {
-		return signalResultDao.findByLastSyncDate(pageable);
+	public List<SignalResult> get(LocalDate baseDate, Pageable pageable) {
+		return signalResultDao.findBySyncDate(baseDate, pageable);
 	}
 
 	/** 取得目前最新的結果 */
@@ -79,9 +79,9 @@ public class SignalService {
 	/** 補充資訊 */
 	public void info(SignalResultVo signalResultVo) {
 		final CompanyVo company = signalResultVo.getCompany();
-		final LocalDate now = LocalDate.now();
+		final LocalDate baseDate = signalResultVo.getSyncDate();
 		if (CompanyVo.TYPE_OTC.equals(company.getStockType())) {
-			otcStockDao.findRecordDates(company.getUid(), now, 1).stream()
+			otcStockDao.findRecordDates(company.getUid(), baseDate, 1).stream()
 					.findFirst()
 					.map(date -> otcStockDao.findByUidAndSyncDate(company.getUid(), date))
 					.ifPresent(stock -> signalResultVo.setStock(StockVo.builder()
@@ -93,7 +93,7 @@ public class SignalService {
 							.build()));
 
 		} else if (CompanyVo.TYPE_TWSE.equals(company.getStockType())) {
-			twseStockDao.findRecordDates(company.getUid(), now, 1).stream()
+			twseStockDao.findRecordDates(company.getUid(), baseDate, 1).stream()
 					.findFirst()
 					.map(date -> twseStockDao.findByUidAndSyncDate(company.getUid(), date))
 					.ifPresent(stock -> signalResultVo.setStock(StockVo.builder()
@@ -107,8 +107,9 @@ public class SignalService {
 		}
 	}
 
-	/** 根據所有訊號設定跑出結果 */
-	public Collection<SignalResult> run() {
+	/** 根據所有訊號設定跑出結果
+	 * @param baseDate*/
+	public Collection<SignalResult> run(LocalDate baseDate) {
 		final List<OtcCompany> otcCompanies = otcCompanyDao.findByLastSyncDate();
 		final List<TwseCompany> twseCompanies = twseCompanyDao.findByLastSyncDate();
 		final ExecutorService executor = Executors.newCachedThreadPool();
@@ -116,7 +117,7 @@ public class SignalService {
 		final SignalTask[] tasks = signalDao.findAll().stream()
 				.map(signal -> {
 					final SignalRule<?> rule = rules.get(signal.getRuleCode());
-					final CompletableFuture<List<CompanyVo>> future = CompletableFuture.supplyAsync(() -> rule.getMatch(signal.readFactor(), otcCompanies, twseCompanies), executor);
+					final CompletableFuture<List<CompanyVo>> future = CompletableFuture.supplyAsync(() -> rule.getMatch(baseDate, signal.readFactor(), otcCompanies, twseCompanies), executor);
 					return new SignalTask(signal, future);
 				})
 				.toArray(SignalTask[]::new);
@@ -133,12 +134,11 @@ public class SignalService {
 		return result.values();
 	}
 
-	public Collection<SignalResult> runAndSave() {
-		final Collection<SignalResult> results = this.run();
+	public Collection<SignalResult> runAndSave(LocalDate baseDate) {
+		final Collection<SignalResult> results = this.run(baseDate);
 
-		final LocalDate now = LocalDate.now();
-		results.forEach(result -> result.setSyncDate(now));
-		signalResultDao.deleteBySyncDate(now);
+		results.forEach(result -> result.setSyncDate(baseDate));
+		signalResultDao.deleteBySyncDate(baseDate);
 		signalResultDao.saveAll(results);
 		return results;
 	}

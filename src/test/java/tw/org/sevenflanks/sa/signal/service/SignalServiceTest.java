@@ -18,6 +18,7 @@ import tw.org.sevenflanks.sa.signal.rule.Rule001;
 import tw.org.sevenflanks.sa.signal.rule.Rule002;
 import tw.org.sevenflanks.sa.signal.rule.Rule003;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
@@ -69,7 +70,7 @@ public class SignalServiceTest {
 	@Transactional
 	@Rollback
 	public void run() {
-		final List<SignalResult> results = signalService.runAndSave().stream()
+		final List<SignalResult> results = signalService.runAndSave(LocalDate.now()).stream()
 				.sorted(Comparator.comparing(bySize, Comparator.reverseOrder()).thenComparing(byUid))
 				.collect(Collectors.toList());
 

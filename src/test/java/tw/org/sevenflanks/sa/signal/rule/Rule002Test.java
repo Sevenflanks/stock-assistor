@@ -11,6 +11,7 @@ import tw.org.sevenflanks.sa.stock.dao.TwseCompanyDao;
 import tw.org.sevenflanks.sa.stock.entity.OtcCompany;
 import tw.org.sevenflanks.sa.stock.entity.TwseCompany;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RunWith(SpringRunner.class)
@@ -32,10 +33,10 @@ public class Rule002Test {
 		final List<OtcCompany> otcCompanies = otcCompanyDao.findByLastSyncDate();
 		final List<TwseCompany> twseCompanies = twseCompanyDao.findByLastSyncDate();
 
-		rule002.getMatch(Rule002.Factor.builder().a(5).b(5).build(), otcCompanies, twseCompanies)
+		rule002.getMatch(LocalDate.now(), Rule002.Factor.builder().a(5).b(5).build(), otcCompanies, twseCompanies)
 				.forEach(System.out::println);
 
-		rule002.getMatch(Rule002.Factor.builder().a(5).b(20).build(), otcCompanies, twseCompanies)
+		rule002.getMatch(LocalDate.now(), Rule002.Factor.builder().a(5).b(20).build(), otcCompanies, twseCompanies)
 				.forEach(System.out::println);
 	}
 
