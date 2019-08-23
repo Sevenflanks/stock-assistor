@@ -66,14 +66,9 @@
 			<artifactId>opencsv</artifactId>
 			<version>4.4</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.jooq</groupId>-->
-<!--			<artifactId>jool-java-8</artifactId>-->
-<!--			<version>0.9.14</version>-->
-<!--		</dependency>-->
 		<dependency>
 			<groupId>org.jooq</groupId>
-			<artifactId>jool</artifactId>
+			<artifactId>jool-java-8</artifactId>
 			<version>0.9.14</version>
 		</dependency>
 		<dependency>
