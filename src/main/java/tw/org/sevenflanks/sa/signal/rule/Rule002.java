@@ -43,7 +43,7 @@ public class Rule002 extends SignalRule<Rule002.Factor> {
 		// 連續 a 個營業日
 		final List<LocalDate> recordDates = otcRgremainDao.findRecordDates(uid, baseDate, factor.a);
 		log.debug("checking {}.OTC uid:{}, recordDates:{}", this.code(), uid, recordDates.stream().map(LocalDate::toString).collect(Collectors.joining(",")));
-		return recordDates.stream()
+		return recordDates.size() == factor.a && recordDates.stream()
 				.allMatch(date -> {
 					final OtcRgremain target = otcRgremainDao.findByUidAndSyncDate(uid, date);
 					final BigDecimal avgMarginBalance = otcRgremainDao.findAvgMarginBalance(uid, date, factor.b);
@@ -62,7 +62,7 @@ public class Rule002 extends SignalRule<Rule002.Factor> {
 		// 連續 a 個營業日
 		final List<LocalDate> recordDates = twseRgremainDao.findRecordDates(uid, baseDate, factor.a);
 		log.debug("checking {}.TWSE uid:{}, recordDates:{}", this.code(), uid, recordDates.stream().map(LocalDate::toString).collect(Collectors.joining(",")));
-		return recordDates.stream()
+		return recordDates.size() == factor.a && recordDates.stream()
 				.allMatch(date -> {
 					final TwseRgremain target = twseRgremainDao.findByUidAndSyncDate(uid, date);
 					final BigDecimal avgMarginBalance = twseRgremainDao.findAvgMarginBalance(uid, date, factor.b);

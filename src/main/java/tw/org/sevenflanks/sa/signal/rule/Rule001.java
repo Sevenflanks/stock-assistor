@@ -43,7 +43,7 @@ public class Rule001 extends SignalRule<Rule001.Factor> {
 		// 連續 a 個營業日
 		final List<LocalDate> recordDates = otcStockDao.findRecordDates(uid, baseDate, factor.a);
 		log.debug("checking {}.OTC uid:{}, recordDates:{}", this.code(), uid, recordDates.stream().map(LocalDate::toString).collect(Collectors.joining(",")));
-		return recordDates.stream()
+		return recordDates.size() == factor.a && recordDates.stream()
 				.allMatch(date -> {
 					final OtcStock target = otcStockDao.findByUidAndSyncDate(uid, date);
 					final BigDecimal avgSharesTraded = otcStockDao.findAvgSharesTraded(uid, date, factor.b);
@@ -62,7 +62,7 @@ public class Rule001 extends SignalRule<Rule001.Factor> {
 		// 連續 a 個營業日
 		final List<LocalDate> recordDates = twseStockDao.findRecordDates(uid, baseDate, factor.a);
 		log.debug("checking {}.TWSE uid:{}, recordDates:{}", this.code(), uid, recordDates.stream().map(LocalDate::toString).collect(Collectors.joining(",")));
-		return recordDates.stream()
+		return recordDates.size() == factor.a && recordDates.stream()
 				.allMatch(date -> {
 					final TwseStock target = twseStockDao.findByUidAndSyncDate(uid, date);
 					final BigDecimal avgSharesTraded = twseStockDao.findAvgSharesTraded(uid, date, factor.b);
