@@ -24,10 +24,7 @@ import tw.org.sevenflanks.sa.stock.model.CompanyVo;
 import tw.org.sevenflanks.sa.stock.model.StockVo;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -81,9 +78,7 @@ public class SignalService {
 		final CompanyVo company = signalResultVo.getCompany();
 		final LocalDate baseDate = signalResultVo.getSyncDate();
 		if (CompanyVo.TYPE_OTC.equals(company.getStockType())) {
-			otcStockDao.findRecordDates(company.getUid(), baseDate, 1).stream()
-					.findFirst()
-					.map(date -> otcStockDao.findByUidAndSyncDate(company.getUid(), date))
+			Optional.ofNullable(otcStockDao.findByUidAndSyncDate(company.getUid(), baseDate))
 					.ifPresent(stock -> signalResultVo.setStock(StockVo.builder()
 							.openingPrice(stock.getOpeningPrice())
 							.closingPrice(stock.getClosingPrice())
@@ -93,9 +88,7 @@ public class SignalService {
 							.build()));
 
 		} else if (CompanyVo.TYPE_TWSE.equals(company.getStockType())) {
-			twseStockDao.findRecordDates(company.getUid(), baseDate, 1).stream()
-					.findFirst()
-					.map(date -> twseStockDao.findByUidAndSyncDate(company.getUid(), date))
+			Optional.ofNullable(twseStockDao.findByUidAndSyncDate(company.getUid(), baseDate))
 					.ifPresent(stock -> signalResultVo.setStock(StockVo.builder()
 							.openingPrice(stock.getOpeningPrice())
 							.closingPrice(stock.getClosingPrice())
