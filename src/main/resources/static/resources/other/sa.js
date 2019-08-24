@@ -112,7 +112,11 @@ let msg = {
     showMsg('warning', message, messages, settings);
   },
   error: function (message, messages, settings) {
-    showMsg('error', message, messages, settings);
+    showMsg('error', message, messages, {
+      closeButton: true,
+      timeOut: 0,
+      extendedTimeOut: 0,
+      ...settings});
   },
   confirm: function (message, messages, callback, onHidden) {
     showConfirm($(confirmBoxTpl), message, messages, callback, onHidden);

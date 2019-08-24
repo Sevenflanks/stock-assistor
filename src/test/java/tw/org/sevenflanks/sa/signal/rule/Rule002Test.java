@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import tw.org.sevenflanks.sa.signal.model.SignalRunOption;
 import tw.org.sevenflanks.sa.stock.dao.OtcCompanyDao;
 import tw.org.sevenflanks.sa.stock.dao.TwseCompanyDao;
 import tw.org.sevenflanks.sa.stock.entity.OtcCompany;
@@ -33,10 +34,10 @@ public class Rule002Test {
 		final List<OtcCompany> otcCompanies = otcCompanyDao.findByLastSyncDate();
 		final List<TwseCompany> twseCompanies = twseCompanyDao.findByLastSyncDate();
 
-		rule002.getMatch(LocalDate.now(), Rule002.Factor.builder().a(5).b(5).build(), otcCompanies, twseCompanies)
+		rule002.getMatch(LocalDate.now(), Rule002.Factor.builder().a(5).b(5).build(), otcCompanies, twseCompanies, new SignalRunOption())
 				.forEach(System.out::println);
 
-		rule002.getMatch(LocalDate.now(), Rule002.Factor.builder().a(5).b(20).build(), otcCompanies, twseCompanies)
+		rule002.getMatch(LocalDate.now(), Rule002.Factor.builder().a(5).b(20).build(), otcCompanies, twseCompanies, new SignalRunOption())
 				.forEach(System.out::println);
 	}
 

@@ -32,6 +32,8 @@
     <button class="ui primary button" id="runBtn">重跑訊號</button>
     <button class="ui secondary button" id="queryBtn">重新查詢</button>
 </div>
+<div class="ui main container" id="progress">
+</div>
 <div class="ui main container" id="main">
     <div id="results">
     </div>
@@ -54,6 +56,13 @@
     <i class="calendar check icon">{{syncDate}}</i>
 </div>`;
 
+  let processTmp = `<div class="ui small indicating progress">
+    <div class="bar">
+        <div class="progress"></div>
+    </div>
+    <div class="label">processing</div>
+</div>`;
+
   let labelTmp = `<a class="ui label">{{label}}</a>`;
 
   $(function () {
@@ -69,7 +78,7 @@
       let baseDate = getBaseDate();
       let queryString = baseDate ? '?baseDate=' + baseDate : '';
       fetch("/api/signal" + queryString, {method: 'POST'}
-      ).then(response => response.json()
+      ).then(response => response ? response.json() : {}
       ).catch(reason => msg.error("重跑失敗", reason)
       ).then(json => {
         if (json && json.error) {
@@ -80,6 +89,32 @@
           render();
         }
       });
+
+      let eventSource = new EventSource(`/api/signal/process?baseDate=${getBaseDate()}`);
+      eventSource.onmessage = evt => {
+        let data = JSON.parse(evt.data);
+        data.progresses.forEach(p => {
+          let $progress = $(`#${p.key}`);
+          if (!$progress.length) {
+            $progress = $(processTmp);
+            $progress.attr('id', p.key);
+            $progress.appendTo('#progress');
+            $progress.progress({
+              duration: 200,
+              total: p.total,
+              text: {
+                active: `${p.message} {value}/{total}`,
+                success: `${p.message} 完成`
+              }
+            })
+          }
+          $progress.progress('set progress', p.progress);
+        })
+      };
+      eventSource.onerror = evt => {
+        eventSource.close();
+        $('#progress').empty();
+      };
     });
 
     $(window).scroll(ifNeedLoadData);
@@ -96,15 +131,16 @@
       // 取出目前最大的pageNo(用長度代替)
       let pageNo = $('.page').length;
 
-      let baseDate = getBaseDate();
-      let baseDateQueryString = baseDate ? '&baseDate=' + baseDate : '';
-      let eventSource = new EventSource(`/api/signal/result?page=${pageNo}${baseDateQueryString}`);
+      let eventSource = new EventSource(`/api/signal/result?page=${pageNo}&baseDate=${getBaseDate()}`);
       $('#main').dimmer('show');
 
       let $page = $(`<div class="page ui relaxed divided list" id="${pageNo}"></div>`);
       eventSource.onmessage = evt => {
         $('#main').dimmer('hide');
         let data = JSON.parse(evt.data);
+
+        if (!data.stock) {return};
+
         let $item = $(itemTmp
           .replace('{{uid}}', data.company.uid)
           .replace('{{closingPrice}}', data.stock.closingPrice)

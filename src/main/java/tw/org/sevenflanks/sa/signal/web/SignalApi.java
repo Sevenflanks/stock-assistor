@@ -8,10 +8,13 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import tw.org.sevenflanks.sa.base.job.JobQueue;
+import tw.org.sevenflanks.sa.signal.model.SignalProgress;
 import tw.org.sevenflanks.sa.signal.model.SignalResultVo;
 import tw.org.sevenflanks.sa.signal.service.SignalService;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -26,6 +29,15 @@ public class SignalApi {
     @Autowired
     private SignalService signalService;
 
+    @GetMapping(value = "/process", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<SignalProgress.SignalProgressPhase> process(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate baseDate) {
+        final String key = SignalProgress.RUN_SIGNAL_PRIFIX + baseDate;
+        return Flux.interval(Duration.ofMillis(100))
+                .map(milli -> SignalProgress.get(key))
+                .skipUntil(p -> !p.isComplete())
+                .takeUntil(SignalProgress.SignalProgressPhase::isComplete);
+    }
+
     @GetMapping(value = "/result", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<SignalResultVo> result(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate baseDate,
@@ -36,12 +48,10 @@ public class SignalApi {
                 .doOnNext(signalService::info);
     }
 
-    @PostMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<SignalResultVo> run(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate baseDate) throws Exception {
+    @PostMapping
+    public Mono<Long> run(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate baseDate) throws Exception {
         final LocalDate date = Optional.ofNullable(baseDate).orElseGet(LocalDate::now);
-        return jobQueue.submit("重跑訊號", () -> Flux.fromIterable(signalService.runAndSave(date))
-                .map(SignalResultVo::new));
+        return jobQueue.submit("重跑訊號", () -> Flux.fromIterable(signalService.runAndSave(date))).count();
     }
 
 }

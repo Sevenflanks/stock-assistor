@@ -1,16 +1,15 @@
 package tw.org.sevenflanks.sa.stock.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
+import tw.org.sevenflanks.sa.stock.model.TwseCompanyModel;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.Table;
-
-import org.springframework.beans.BeanUtils;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import tw.org.sevenflanks.sa.stock.model.TwseCompanyModel;
 
 /** 上市公司資料 */
 @Getter
@@ -21,7 +20,7 @@ import tw.org.sevenflanks.sa.stock.model.TwseCompanyModel;
 		@Index(name = "TWSECOMPANY_IDX1", columnList = "syncDate"),
 		@Index(name = "TWSECOMPANY_IDX2", columnList = "uid")
 })
-public class TwseCompany extends SyncDateEntity {
+public class TwseCompany extends SyncDateEntity implements Company {
 
 	/** 出表日期 */
 	@Column

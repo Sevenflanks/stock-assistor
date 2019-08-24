@@ -9,10 +9,9 @@ import tw.org.sevenflanks.sa.base.data.JsonListModel;
 import tw.org.sevenflanks.sa.base.data.JsonModel;
 import tw.org.sevenflanks.sa.signal.dao.SignalDao;
 import tw.org.sevenflanks.sa.signal.dao.SignalResultDao;
+import tw.org.sevenflanks.sa.signal.entity.Signal;
 import tw.org.sevenflanks.sa.signal.entity.SignalResult;
-import tw.org.sevenflanks.sa.signal.model.SignalResultVo;
-import tw.org.sevenflanks.sa.signal.model.SignalTask;
-import tw.org.sevenflanks.sa.signal.model.SignalVo;
+import tw.org.sevenflanks.sa.signal.model.*;
 import tw.org.sevenflanks.sa.signal.rule.SignalRule;
 import tw.org.sevenflanks.sa.stock.dao.OtcCompanyDao;
 import tw.org.sevenflanks.sa.stock.dao.OtcStockDao;
@@ -105,12 +104,24 @@ public class SignalService {
 	public Collection<SignalResult> run(LocalDate baseDate) {
 		final List<OtcCompany> otcCompanies = otcCompanyDao.findByLastSyncDate();
 		final List<TwseCompany> twseCompanies = twseCompanyDao.findByLastSyncDate();
-		final ExecutorService executor = Executors.newCachedThreadPool();
+		final ExecutorService executor = Executors.newWorkStealingPool();
 
 		final SignalTask[] tasks = signalDao.findAll().stream()
+                .sorted(Comparator.comparing(Signal::getRuleCode))
 				.map(signal -> {
- 					final SignalRule<?> rule = rules.get(signal.getRuleCode());
-					final CompletableFuture<List<CompanyVo>> future = CompletableFuture.supplyAsync(() -> rule.getMatch(baseDate, signal.readFactor(), otcCompanies, twseCompanies), executor);
+					final SignalProgress progress = SignalProgress.start(
+							SignalProgress.RUN_SIGNAL_PRIFIX + baseDate,
+							otcCompanies.size() + twseCompanies.size(),
+							"訊號處理中:" + signal.getName());
+					final SignalRunOption optional = SignalRunOption.builder()
+							.beforeDoMatch(c -> progress.add(1))
+							.build();
+
+					final SignalRule<?> rule = rules.get(signal.getRuleCode());
+					final CompletableFuture<List<CompanyVo>> future = CompletableFuture.supplyAsync(
+							() -> rule.getMatch(baseDate, signal.readFactor(), otcCompanies, twseCompanies, optional)
+									.collect(Collectors.toList())
+							, executor);
 					return new SignalTask(signal, future);
 				})
 				.toArray(SignalTask[]::new);
@@ -130,9 +141,14 @@ public class SignalService {
 	public Collection<SignalResult> runAndSave(LocalDate baseDate) {
 		final Collection<SignalResult> results = this.run(baseDate);
 
+		final SignalProgress progress = SignalProgress.start(SignalProgress.RUN_SIGNAL_PRIFIX + baseDate, 1, "結果儲存中");
 		results.forEach(result -> result.setSyncDate(baseDate));
 		signalResultDao.deleteBySyncDate(baseDate);
 		signalResultDao.saveAll(results);
+		progress.add(1);
+
+		SignalProgress.finish(SignalProgress.RUN_SIGNAL_PRIFIX + baseDate);
+
 		return results;
 	}
 
