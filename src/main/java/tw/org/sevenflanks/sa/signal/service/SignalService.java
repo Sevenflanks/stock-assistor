@@ -3,8 +3,10 @@ package tw.org.sevenflanks.sa.signal.service;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import tw.org.sevenflanks.sa.base.data.JsonListModel;
 import tw.org.sevenflanks.sa.base.data.JsonModel;
 import tw.org.sevenflanks.sa.signal.dao.SignalDao;
@@ -55,21 +57,32 @@ public class SignalService {
 
 	private Map<String, SignalRule<?>> rules;
 
-	@Autowired
-	public void setRules(List<SignalRule<?>> rules) {
-		this.rules = rules.stream().collect(Collectors.toMap(SignalRule::code, Function.identity(), (o1, o2) -> {
-			throw new RuntimeException("存在兩個以上相同代號的的rule: " + o1.code() + ":" + o1 + ", " + o2.code() + ":" + o2);
-		}));
-	}
-
 	/** 取得目前最新的結果(分頁) */
-	public List<SignalResult> get(LocalDate baseDate, Pageable pageable) {
-		return signalResultDao.findBySyncDate(baseDate, pageable);
+	public List<SignalResult> get(SignalResultForm form, Pageable pageable) {
+
+		Specification<SignalResult> spec = (r, cq, cb) -> r.get("uid").isNotNull();
+		if (form.getBaseDate() != null) {
+			spec = spec.and((r, cq, cb) -> cb.equal(r.get("syncDate"), form.getBaseDate()));
+		} else {
+			spec = spec.and((r, cq, cb) -> cb.equal(r.get("syncDate"), LocalDate.now()));
+		}
+		if (!CollectionUtils.isEmpty(form.getUids())) {
+			spec = spec.and((r, cq, cb) -> r.get("uid").in(form.getUids()));
+		}
+
+		return signalResultDao.findAll(spec, pageable).getContent();
 	}
 
 	/** 取得目前最新的結果 */
 	public List<SignalResult> get() {
 		return signalResultDao.findByLastSyncDate();
+	}
+
+	@Autowired
+	public void setRules(List<SignalRule<?>> rules) {
+		this.rules = rules.stream().collect(Collectors.toMap(SignalRule::code, Function.identity(), (o1, o2) -> {
+			throw new RuntimeException("存在兩個以上相同代號的的rule: " + o1.code() + ":" + o1 + ", " + o2.code() + ":" + o2);
+		}));
 	}
 
 	/** 補充資訊 */

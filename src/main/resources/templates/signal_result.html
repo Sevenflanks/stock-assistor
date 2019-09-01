@@ -28,9 +28,27 @@
 <body>
 
 <div class="ui main container">
-    <input id="baseDate" type="date" placeholder="基準日">
-    <button class="ui primary button" id="runBtn">重跑訊號</button>
-    <button class="ui secondary button" id="queryBtn">重新查詢</button>
+    <form class="ui form" action="#">
+        <h4 class="ui dividing header">訊號記錄查詢</h4>
+        <div class="fields">
+            <div class="four wide field">
+                <label>基準日</label>
+                <div class="ui input">
+                    <input id="baseDate" type="date">
+                </div>
+            </div>
+            <div class="twelve wide field">
+                <label>股票代號</label>
+                <select id="uids" multiple class="ui search dropdown">
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+    </form>
+    <div class="buttons">
+        <button type="button" class="ui primary button" id="runBtn">重跑訊號</button>
+        <button type="button" class="ui secondary button" id="queryBtn">重新查詢</button>
+    </div>
 </div>
 <div class="ui main container" id="progress">
 </div>
@@ -66,9 +84,14 @@
   let labelTmp = `<a class="ui label">{{label}}</a>`;
 
   $(function () {
+    $('#uids').dropdown({
+      allowAdditions: true,
+    });
+
     render();
 
     $('#queryBtn').on('click', e => {
+      $('#results').empty();
       render();
     });
 
@@ -130,8 +153,16 @@
     function render() {
       // 取出目前最大的pageNo(用長度代替)
       let pageNo = $('.page').length;
+      let baseDate = getBaseDate();
+      let uids = $('#uids').dropdown('get value');
 
-      let eventSource = new EventSource(`/api/signal/result?page=${pageNo}&baseDate=${getBaseDate()}`);
+      let queryString = [
+        `page=${pageNo}`,
+        baseDate ? 'baseDate=' + baseDate : null,
+        uids && uids.length > 0 ? 'uids=' + uids.join(',') : null
+      ].join('&');
+
+      let eventSource = new EventSource(`/api/signal/result?${queryString}`);
       $('#main').dimmer('show');
 
       let $page = $(`<div class="page ui relaxed divided list" id="${pageNo}"></div>`);
