@@ -154,7 +154,8 @@ public class SignalService {
 	public Collection<SignalResult> runAndSave(LocalDate baseDate) {
 		final Collection<SignalResult> results = this.run(baseDate);
 
-		final SignalProgress progress = SignalProgress.start(SignalProgress.RUN_SIGNAL_PRIFIX + baseDate, 1, "結果儲存中");
+		final SignalProgress progress = SignalProgress.start(SignalProgress.RUN_SIGNAL_PRIFIX + baseDate, 100, "結果儲存中");
+		progress.add(99);
 		results.forEach(result -> result.setSyncDate(baseDate));
 		signalResultDao.deleteBySyncDate(baseDate);
 		signalResultDao.saveAll(results);

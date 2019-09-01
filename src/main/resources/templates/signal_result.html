@@ -102,8 +102,12 @@
       let queryString = baseDate ? '?baseDate=' + baseDate : '';
       fetch("/api/signal" + queryString, {method: 'POST'}
       ).then(response => response ? response.json() : {}
-      ).catch(reason => msg.error("重跑失敗", reason)
-      ).then(json => {
+      ).catch(reason => {
+        // 非主要觸發者，於讀取調跑完後自動load
+        msg.error("重跑失敗", reason);
+        $('#main').dimmer('show');
+        window.onProgressComplete = render;
+      }).then(json => {
         if (json && json.error) {
           msg.error('操作中斷', json.message);
           $('#main').dimmer('hide');
@@ -113,31 +117,7 @@
         }
       });
 
-      let eventSource = new EventSource(`/api/signal/process?baseDate=${getBaseDate()}`);
-      eventSource.onmessage = evt => {
-        let data = JSON.parse(evt.data);
-        data.progresses.forEach(p => {
-          let $progress = $(`#${p.key}`);
-          if (!$progress.length) {
-            $progress = $(processTmp);
-            $progress.attr('id', p.key);
-            $progress.appendTo('#progress');
-            $progress.progress({
-              duration: 200,
-              total: p.total,
-              text: {
-                active: `${p.message} {value}/{total}`,
-                success: `${p.message} 完成`
-              }
-            })
-          }
-          $progress.progress('set progress', p.progress);
-        })
-      };
-      eventSource.onerror = evt => {
-        eventSource.close();
-        $('#progress').empty();
-      };
+      loadingProgress();
     });
 
     $(window).scroll(ifNeedLoadData);
@@ -148,6 +128,44 @@
         trigger = false;
         render();
       }
+    }
+
+    function loadingProgress() {
+
+      let eventSource = new EventSource(`/api/signal/process?baseDate=${getBaseDate()}`);
+      eventSource.onmessage = evt => {
+        let data = JSON.parse(evt.data);
+        if (data.progresses) {
+          data.progresses.forEach(p => {
+            let $progress = $(`#${p.key}`);
+            if (!$progress.length) {
+              $progress = $(processTmp);
+              $progress.attr('id', p.key);
+              $progress.appendTo('#progress');
+              $progress.progress({
+                duration: 200,
+                total: p.total,
+                text: {
+                  active: `${p.message} {value}/{total}`,
+                  success: `${p.message} 完成`
+                }
+              })
+            }
+            $progress.progress('set progress', p.progress);
+          })
+        }
+        if (data.complete) {
+          $('#progress').empty();
+          if (window.onProgressComplete) {
+            window.onProgressComplete();
+            window.onProgressComplete = undefined;
+          }
+        }
+      };
+      eventSource.onerror = evt => {
+        eventSource.close();
+        $('#progress').empty();
+      };
     }
 
     function render() {
