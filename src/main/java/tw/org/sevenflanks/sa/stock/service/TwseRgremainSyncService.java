@@ -35,8 +35,9 @@ public class TwseRgremainSyncService implements GenericSyncService<TwseRgremain,
 	}
 
 	@Override
-	public void batchSave(List<TwseRgremain> datas) {
-	}
+	public int batchSave(LocalDate date, List<TwseRgremain> datas) {
+    return 0;
+  }
 
 	@Override
 	public Class<TwseRgremain> entityClass() {

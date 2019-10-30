@@ -35,8 +35,9 @@ public class OtcStockSyncService implements GenericSyncService<OtcStock, OtcStoc
 	}
 
 	@Override
-	public void batchSave(List<OtcStock> datas) {
-	}
+	public int batchSave(LocalDate date, List<OtcStock> datas) {
+    return 0;
+  }
 
 	@Override
 	public Class<OtcStock> entityClass() {

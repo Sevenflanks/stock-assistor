@@ -1,15 +1,5 @@
 package tw.org.sevenflanks.sa.stock.service;
 
-import org.jooq.lambda.Unchecked;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import tw.org.sevenflanks.sa.base.msg.enums.MsgTemplate;
-import tw.org.sevenflanks.sa.base.msg.exception.MsgException;
-import tw.org.sevenflanks.sa.config.GlobalConstants;
-import tw.org.sevenflanks.sa.stock.dao.SyncDateDao;
-import tw.org.sevenflanks.sa.stock.entity.SyncDateEntity;
-import tw.org.sevenflanks.sa.stock.enums.DataStoreType;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,13 +10,22 @@ import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import org.jooq.lambda.Unchecked;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tw.org.sevenflanks.sa.base.msg.enums.MsgTemplate;
+import tw.org.sevenflanks.sa.base.msg.exception.MsgException;
+import tw.org.sevenflanks.sa.config.GlobalConstants;
+import tw.org.sevenflanks.sa.stock.dao.SyncDateDao;
+import tw.org.sevenflanks.sa.stock.entity.SyncDateEntity;
+import tw.org.sevenflanks.sa.stock.enums.DataStoreType;
 
 public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDateDao<T>> {
 	Logger log = LoggerFactory.getLogger(GenericSyncService.class);
 
 	DAO dao();
 
-	void batchSave(List<T> datas);
+	int batchSave(LocalDate date, List<T> datas);
 
 	Class<T> entityClass();
 

@@ -35,8 +35,9 @@ public class TwseCompanySyncService implements GenericSyncService<TwseCompany, T
 	}
 
 	@Override
-	public void batchSave(List<TwseCompany> datas) {
-	}
+	public int batchSave(LocalDate date, List<TwseCompany> datas) {
+    return 0;
+  }
 
 	@Override
 	public Class<TwseCompany> entityClass() {

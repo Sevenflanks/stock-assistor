@@ -35,8 +35,9 @@ public class OtcRgremainSyncService implements GenericSyncService<OtcRgremain, O
 	}
 
 	@Override
-	public void batchSave(List<OtcRgremain> datas) {
-	}
+	public int batchSave(LocalDate date, List<OtcRgremain> datas) {
+    return 0;
+  }
 
 	@Override
 	public Class<OtcRgremain> entityClass() {

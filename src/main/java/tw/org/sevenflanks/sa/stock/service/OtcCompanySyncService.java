@@ -1,20 +1,26 @@
 package tw.org.sevenflanks.sa.stock.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import tw.org.sevenflanks.sa.stock.dao.OtcCompanyDao;
-import tw.org.sevenflanks.sa.stock.entity.OtcCompany;
-import tw.org.sevenflanks.sa.stock.picker.OtcCompanyPicker;
-
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tw.org.sevenflanks.sa.base.utils.SqlUtils;
+import tw.org.sevenflanks.sa.stock.dao.OtcCompanyDao;
+import tw.org.sevenflanks.sa.stock.entity.OtcCompany;
+import tw.org.sevenflanks.sa.stock.picker.OtcCompanyPicker;
 
 @Service
 @Transactional
@@ -27,7 +33,7 @@ public class OtcCompanySyncService implements GenericSyncService<OtcCompany, Otc
 	private OtcCompanyPicker otcCompanyPicker;
 
 	@Autowired
-	private JdbcTemplate jdbcTemplate;
+	private NamedParameterJdbcTemplate jdbcTemplate;
 
 	@Override
 	public OtcCompanyDao dao() {
@@ -35,7 +41,18 @@ public class OtcCompanySyncService implements GenericSyncService<OtcCompany, Otc
 	}
 
 	@Override
-	public void batchSave(List<OtcCompany> datas) {
+	public int batchSave(LocalDate date, List<OtcCompany> datas) {
+		final LocalDateTime saveDbStartTime = LocalDateTime.now();
+
+		AtomicInteger result = new AtomicInteger();
+		String sql = SqlUtils.batchInsert(OtcCompany.class);
+		Iterables.partition(datas, 1000).forEach(partition -> {
+			MapSqlParameterSource[] batchValuesMap = SqlUtils.getBatchValuesToMap(partition, data -> data.setSyncDate(date));
+			result.addAndGet(IntStream.of(this.jdbcTemplate.batchUpdate(sql, batchValuesMap)).sum());
+		});
+
+		log.info("[{}@{}] saved to db, in {}s", this.zhName(), date, ChronoUnit.SECONDS.between(saveDbStartTime, LocalDateTime.now()));
+		return result.get();
 	}
 
 	@Override
