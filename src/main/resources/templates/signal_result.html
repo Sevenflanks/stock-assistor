@@ -32,13 +32,13 @@
         <h4 class="ui dividing header">訊號記錄查詢</h4>
         <div class="fields">
             <div class="four wide field">
-                <label>基準日</label>
+                <label for="baseDate">基準日</label>
                 <div class="ui input">
                     <input id="baseDate" type="date">
                 </div>
             </div>
             <div class="twelve wide field">
-                <label>股票代號</label>
+                <label for="uids">股票代號</label>
                 <select id="uids" multiple class="ui search dropdown">
                     <option value=""></option>
                 </select>
@@ -84,7 +84,8 @@
   let labelTmp = `<a class="ui label">{{label}}</a>`;
 
   $(function () {
-    $('#uids').dropdown({
+    let $uids = $('#uids');
+    $uids.dropdown({
       allowAdditions: true,
     });
 
@@ -172,7 +173,7 @@
       // 取出目前最大的pageNo(用長度代替)
       let pageNo = $('.page').length;
       let baseDate = getBaseDate();
-      let uids = $('#uids').dropdown('get value');
+      let uids = $uids.dropdown('get value');
 
       let queryString = [
         `page=${pageNo}`,
@@ -188,7 +189,7 @@
         $('#main').dimmer('hide');
         let data = JSON.parse(evt.data);
 
-        if (!data.stock) {return};
+        if (!data.stock) {return}
 
         let $item = $(itemTmp
           .replace('{{uid}}', data.company.uid)
@@ -213,12 +214,13 @@
     }
 
     function getBaseDate() {
-      let val = $('#baseDate').val();
+      let $baseDate = $('#baseDate');
+      let val = $baseDate.val();
       if (val) {
         return val;
       } else {
         let today = moment().format('YYYY-MM-DD');
-        $('#baseDate').val(today);
+        $baseDate.val(today);
         return today
       }
     }
