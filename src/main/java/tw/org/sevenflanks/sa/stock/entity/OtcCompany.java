@@ -116,7 +116,7 @@ public class OtcCompany extends SyncDateEntity implements Company {
 
 	/** 過戶地址 */
 	@Column
-	private String Other6;
+	private String other6;
 
 	/** 簽證會計師事務所 */
 	@Column

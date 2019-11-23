@@ -1,5 +1,20 @@
 package tw.org.sevenflanks.sa.stock.service;
 
+import com.google.common.collect.Iterables;
+import lombok.extern.slf4j.Slf4j;
+import org.jooq.lambda.Unchecked;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import tw.org.sevenflanks.sa.base.exception.NotImplementedException;
+import tw.org.sevenflanks.sa.base.msg.enums.MsgTemplate;
+import tw.org.sevenflanks.sa.base.msg.exception.MsgException;
+import tw.org.sevenflanks.sa.base.utils.SqlUtils;
+import tw.org.sevenflanks.sa.config.GlobalConstants;
+import tw.org.sevenflanks.sa.stock.dao.SyncDateDao;
+import tw.org.sevenflanks.sa.stock.entity.SyncDateEntity;
+import tw.org.sevenflanks.sa.stock.enums.DataStoreType;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,35 +25,30 @@ import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
-import org.jooq.lambda.Unchecked;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import tw.org.sevenflanks.sa.base.msg.enums.MsgTemplate;
-import tw.org.sevenflanks.sa.base.msg.exception.MsgException;
-import tw.org.sevenflanks.sa.config.GlobalConstants;
-import tw.org.sevenflanks.sa.stock.dao.SyncDateDao;
-import tw.org.sevenflanks.sa.stock.entity.SyncDateEntity;
-import tw.org.sevenflanks.sa.stock.enums.DataStoreType;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
-public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDateDao<T>> {
-	Logger log = LoggerFactory.getLogger(GenericSyncService.class);
+@Slf4j
+public abstract class AbstractSyncService<T extends SyncDateEntity, DAO extends SyncDateDao<T>> {
 
-	DAO dao();
+	@Autowired
+	private NamedParameterJdbcTemplate jdbcTemplate;
 
-	int batchSave(LocalDate date, List<T> datas);
+	abstract DAO dao();
 
-	Class<T> entityClass();
+	abstract Class<T> entityClass();
 
 	/** 從遠端抓資料 */
-	List<T> fetch(LocalDate date);
+	abstract List<T> fetch(LocalDate date);
 
 	/** 檔案名稱 */
-	String fileName();
+	abstract String fileName();
 
 	/** 中文名稱 */
-	String zhName();
+	abstract String zhName();
 
-	default DataStoreType check(LocalDate date) {
+	/** 檢查資料的儲存類型 */
+	DataStoreType check(LocalDate date) {
 		try {
 			final long dbCount = dao().countBySyncDate(date);
 			if (dbCount > 0) {
@@ -58,7 +68,8 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 		return DataStoreType.NONE;
 	}
 
-	default void sync(LocalDate date, boolean fetchFromApi) throws IOException {
+	/** 與遠端API或File同步資料到Sql */
+	void sync(LocalDate date, boolean fetchFromApi) throws IOException {
 		// 先從檔案資料讀取，沒有的話再從Api撈
 		final LocalDateTime fetchFileStartTime = LocalDateTime.now();
 		final Optional<List<T>> fileData = this.loadFromFile(date);
@@ -82,7 +93,7 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 	}
 
 	/** 儲存到檔案 */
-	default void saveToFile(LocalDate date, List<T> datas) throws IOException {
+	private void saveToFile(LocalDate date, List<T> datas) throws IOException {
 		final LocalDateTime saveFileStartTime = LocalDateTime.now();
 		final Path path = Paths.get("data").resolve(YearMonth.from(date).toString()).resolve(date.toString());
 		log.debug("[{}@{}] saving to file, {}", this.zhName(), date, path);
@@ -108,7 +119,7 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 	 * 從檔案讀取
 	 * @return 若檔案不存在，則回傳為Empty
 	 */
-	default Optional<List<T>> loadFromFile(LocalDate date) throws IOException {
+	private Optional<List<T>> loadFromFile(LocalDate date) throws IOException {
 		final Path path = Paths.get("data").resolve(YearMonth.from(date).toString()).resolve(date.toString());
 		final Path loadFrom = path.resolve(fileName());
 		log.debug("[{}@{}] loaded from file, {}", this.zhName(), date, loadFrom);
@@ -124,16 +135,32 @@ public interface GenericSyncService<T extends SyncDateEntity, DAO extends SyncDa
 	}
 
 	/** 儲存到 db */
-	default void saveToDb(LocalDate date, List<T> datas) {
+	private void saveToDb(LocalDate date, List<T> datas) {
 		final LocalDateTime saveDbStartTime = LocalDateTime.now();
 
 		log.debug("[{}@{}] saving to db", this.zhName(), date);
 		datas.forEach(e -> e.setSyncDate(date));
 		// 根據日期全刪全增
 		dao().deleteBySyncDate(date);
-		final List<T> saveds = dao().saveAll(datas);
+		try {
+			this.batchSave(datas);
+		} catch (NotImplementedException ignore) {
+			dao().saveAll(datas);
+		}
 
 		log.info("[{}@{}] saved to db, in {}s", this.zhName(), date, ChronoUnit.SECONDS.between(saveDbStartTime, LocalDateTime.now()));
+	}
+
+	/** 批次儲存(透過JdbcTemplate) */
+	private int batchSave(List<T> datas) {
+		AtomicInteger result = new AtomicInteger();
+		String sql = SqlUtils.batchInsert(entityClass());
+		Iterables.partition(datas, 1000).forEach(partition -> {
+			MapSqlParameterSource[] batchValuesMap = SqlUtils.getBatchValuesToMap(partition, data -> {});
+			result.addAndGet(IntStream.of(this.jdbcTemplate.batchUpdate(sql, batchValuesMap)).sum());
+		});
+
+		return result.get();
 	}
 
 }

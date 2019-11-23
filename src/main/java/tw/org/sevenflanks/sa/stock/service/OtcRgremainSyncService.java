@@ -1,7 +1,7 @@
 package tw.org.sevenflanks.sa.stock.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tw.org.sevenflanks.sa.stock.dao.OtcRgremainDao;
@@ -16,51 +16,44 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @Transactional
-public class OtcRgremainSyncService implements GenericSyncService<OtcRgremain, OtcRgremainDao> {
+public class OtcRgremainSyncService extends AbstractSyncService<OtcRgremain, OtcRgremainDao> {
 
-	@Autowired
-	private OtcRgremainDao otcStockDao;
+    @Autowired
+    private OtcRgremainDao otcStockDao;
 
-	@Autowired
-	private OtcRgremainPicker otcRgremainPicker;
+    @Autowired
+    private OtcRgremainPicker otcRgremainPicker;
 
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
+    @Override
+    public OtcRgremainDao dao() {
+        return otcStockDao;
+    }
 
-	@Override
-	public OtcRgremainDao dao() {
-		return otcStockDao;
-	}
+    @Override
+    public Class<OtcRgremain> entityClass() {
+        return OtcRgremain.class;
+    }
 
-	@Override
-	public int batchSave(LocalDate date, List<OtcRgremain> datas) {
-    return 0;
-  }
+    @Override
+    public List<OtcRgremain> fetch(LocalDate date) {
+        return Optional.ofNullable(otcRgremainPicker.getStockDay(date))
+                .map(OtcExchangeModel::getAaData)
+                .map(Collection::stream)
+                .orElseGet(Stream::empty)
+                .map(OtcRgremain::new)
+                .collect(Collectors.toList());
+    }
 
-	@Override
-	public Class<OtcRgremain> entityClass() {
-		return OtcRgremain.class;
-	}
+    @Override
+    public String fileName() {
+        return "otc_rgremain";
+    }
 
-	@Override
-	public List<OtcRgremain> fetch(LocalDate date) {
-		return Optional.ofNullable(otcRgremainPicker.getStockDay(date))
-				.map(OtcExchangeModel::getAaData)
-				.map(Collection::stream)
-				.orElseGet(Stream::empty)
-				.map(OtcRgremain::new)
-				.collect(Collectors.toList());
-	}
-
-	@Override
-	public String fileName() {
-		return "otc_rgremain";
-	}
-
-	@Override
-	public String zhName() {
-		return "上櫃融券餘額";
-	}
+    @Override
+    public String zhName() {
+        return "上櫃融券餘額";
+    }
 }

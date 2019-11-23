@@ -1,7 +1,7 @@
 package tw.org.sevenflanks.sa.stock.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tw.org.sevenflanks.sa.stock.dao.OtcStockDao;
@@ -16,51 +16,44 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @Transactional
-public class OtcStockSyncService implements GenericSyncService<OtcStock, OtcStockDao> {
+public class OtcStockSyncService extends AbstractSyncService<OtcStock, OtcStockDao> {
 
-	@Autowired
-	private OtcStockDao otcStockDao;
+    @Autowired
+    private OtcStockDao otcStockDao;
 
-	@Autowired
-	private OtcStockPicker otcStockPicker;
+    @Autowired
+    private OtcStockPicker otcStockPicker;
 
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
+    @Override
+    public OtcStockDao dao() {
+        return otcStockDao;
+    }
 
-	@Override
-	public OtcStockDao dao() {
-		return otcStockDao;
-	}
+    @Override
+    public Class<OtcStock> entityClass() {
+        return OtcStock.class;
+    }
 
-	@Override
-	public int batchSave(LocalDate date, List<OtcStock> datas) {
-    return 0;
-  }
+    @Override
+    public List<OtcStock> fetch(LocalDate date) {
+        final OtcStockModel stockDay = otcStockPicker.getStockDay(date);
+        return Stream.concat(
+                Optional.ofNullable(stockDay).map(OtcStockModel::getMmData).map(Collection::stream).orElseGet(Stream::empty),
+                Optional.ofNullable(stockDay).map(OtcStockModel::getAaData).map(Collection::stream).orElseGet(Stream::empty))
+                .map(OtcStock::new)
+                .collect(Collectors.toList());
+    }
 
-	@Override
-	public Class<OtcStock> entityClass() {
-		return OtcStock.class;
-	}
+    @Override
+    public String fileName() {
+        return "otc_stock";
+    }
 
-	@Override
-	public List<OtcStock> fetch(LocalDate date) {
-		final OtcStockModel stockDay = otcStockPicker.getStockDay(date);
-		return Stream.concat(
-				Optional.ofNullable(stockDay).map(OtcStockModel::getMmData).map(Collection::stream).orElseGet(Stream::empty),
-				Optional.ofNullable(stockDay).map(OtcStockModel::getAaData).map(Collection::stream).orElseGet(Stream::empty))
-				.map(OtcStock::new)
-				.collect(Collectors.toList());
-	}
-
-	@Override
-	public String fileName() {
-		return "otc_stock";
-	}
-
-	@Override
-	public String zhName() {
-		return "上櫃股票行情";
-	}
+    @Override
+    public String zhName() {
+        return "上櫃股票行情";
+    }
 }

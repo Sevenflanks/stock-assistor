@@ -1,30 +1,25 @@
 package tw.org.sevenflanks.sa.stock.service;
 
-import com.google.common.collect.Iterables;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tw.org.sevenflanks.sa.base.utils.SqlUtils;
 import tw.org.sevenflanks.sa.stock.dao.OtcCompanyDao;
 import tw.org.sevenflanks.sa.stock.entity.OtcCompany;
 import tw.org.sevenflanks.sa.stock.picker.OtcCompanyPicker;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Slf4j
 @Service
 @Transactional
-public class OtcCompanySyncService implements GenericSyncService<OtcCompany, OtcCompanyDao> {
+public class OtcCompanySyncService extends AbstractSyncService<OtcCompany, OtcCompanyDao> {
 
 	@Autowired
 	private OtcCompanyDao otcCompanyDao;
@@ -32,27 +27,9 @@ public class OtcCompanySyncService implements GenericSyncService<OtcCompany, Otc
 	@Autowired
 	private OtcCompanyPicker otcCompanyPicker;
 
-	@Autowired
-	private NamedParameterJdbcTemplate jdbcTemplate;
-
 	@Override
 	public OtcCompanyDao dao() {
 		return otcCompanyDao;
-	}
-
-	@Override
-	public int batchSave(LocalDate date, List<OtcCompany> datas) {
-		final LocalDateTime saveDbStartTime = LocalDateTime.now();
-
-		AtomicInteger result = new AtomicInteger();
-		String sql = SqlUtils.batchInsert(OtcCompany.class);
-		Iterables.partition(datas, 1000).forEach(partition -> {
-			MapSqlParameterSource[] batchValuesMap = SqlUtils.getBatchValuesToMap(partition, data -> data.setSyncDate(date));
-			result.addAndGet(IntStream.of(this.jdbcTemplate.batchUpdate(sql, batchValuesMap)).sum());
-		});
-
-		log.info("[{}@{}] saved to db, in {}s", this.zhName(), date, ChronoUnit.SECONDS.between(saveDbStartTime, LocalDateTime.now()));
-		return result.get();
 	}
 
 	@Override
@@ -66,7 +43,7 @@ public class OtcCompanySyncService implements GenericSyncService<OtcCompany, Otc
 		if (lastSyncDate != null && lastSyncDate.isAfter(date)) {
 			log.info("[{}@{}] already have newer data:{}, skip sync", this.zhName(), date, lastSyncDate);
 		} else {
-			GenericSyncService.super.sync(date, fetchFromApi);
+			super.sync(date, fetchFromApi);
 		}
 	}
 

@@ -1,7 +1,7 @@
 package tw.org.sevenflanks.sa.stock.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tw.org.sevenflanks.sa.stock.dao.TwseRgremainDao;
@@ -16,51 +16,44 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @Transactional
-public class TwseRgremainSyncService implements GenericSyncService<TwseRgremain, TwseRgremainDao> {
+public class TwseRgremainSyncService extends AbstractSyncService<TwseRgremain, TwseRgremainDao> {
 
-	@Autowired
-	private TwseRgremainDao twseStockDao;
+    @Autowired
+    private TwseRgremainDao twseStockDao;
 
-	@Autowired
-	private TwseDataPicker twseDataPicker;
+    @Autowired
+    private TwseDataPicker twseDataPicker;
 
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
+    @Override
+    public TwseRgremainDao dao() {
+        return twseStockDao;
+    }
 
-	@Override
-	public TwseRgremainDao dao() {
-		return twseStockDao;
-	}
+    @Override
+    public Class<TwseRgremain> entityClass() {
+        return TwseRgremain.class;
+    }
 
-	@Override
-	public int batchSave(LocalDate date, List<TwseRgremain> datas) {
-    return 0;
-  }
+    @Override
+    public List<TwseRgremain> fetch(LocalDate date) {
+        return Optional.ofNullable(twseDataPicker.getRgremain(date))
+                .map(TwseExchangeModel::getData)
+                .map(Collection::stream)
+                .orElseGet(Stream::empty)
+                .map(TwseRgremain::new)
+                .collect(Collectors.toList());
+    }
 
-	@Override
-	public Class<TwseRgremain> entityClass() {
-		return TwseRgremain.class;
-	}
+    @Override
+    public String fileName() {
+        return "twse_rgremain";
+    }
 
-	@Override
-	public List<TwseRgremain> fetch(LocalDate date) {
-		return Optional.ofNullable(twseDataPicker.getRgremain(date))
-				.map(TwseExchangeModel::getData)
-				.map(Collection::stream)
-				.orElseGet(Stream::empty)
-				.map(TwseRgremain::new)
-				.collect(Collectors.toList());
-	}
-
-	@Override
-	public String fileName() {
-		return "twse_rgremain";
-	}
-
-	@Override
-	public String zhName() {
-		return "上市融資餘額";
-	}
+    @Override
+    public String zhName() {
+        return "上市融資餘額";
+    }
 }
